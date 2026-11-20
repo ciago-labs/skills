@@ -1,5 +1,4 @@
 import json
-import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -114,12 +113,15 @@ class TestPgQuerySurgeon(unittest.TestCase):
         self.assertIn("memory_spill", cats)
 
     def test_malformed_explain_returns_valid_error_schema(self):
-        proc = subprocess.run(
+        import os as _os
+        py_bin = _os.path.basename(sys.executable)
+        res = run_bounded_command(
             [sys.executable, str(SCRIPTS_DIR / "analyze_explain.py"), "--explain-file", str(EXAMPLES_DIR / "schema.sql")],
-            capture_output=True, text=True, timeout=10
+            timeout_sec=10.0,
+            allowed_executables={py_bin},
         )
-        self.assertEqual(proc.returncode, 2)
-        err = json.loads(proc.stderr)
+        self.assertEqual(res["returncode"], 2)
+        err = json.loads(res["stderr"])
         self.assertValidSchema(err)
         self.assertEqual(err["status"], "error")
 
@@ -252,6 +254,7 @@ class TestPgQuerySurgeon(unittest.TestCase):
             [sys.executable, "-c", "import time\nwhile True:\n    print('X' * 4096, flush=True)"],
             timeout_sec=5.0,
             max_bytes=8192,
+            allowed_executables={_os.path.basename(sys.executable)},
         )
         self.assertTrue(res["ok"])
         self.assertTrue(res["truncated"])
@@ -263,10 +266,13 @@ class TestPgQuerySurgeon(unittest.TestCase):
             _os.kill(res["child_pid"], 0)
 
     def test_streaming_bounded_subprocess_large_stderr_and_simultaneous_io(self):
+        import os as _os
+        py_allow = {_os.path.basename(sys.executable)}
         res_err = run_bounded_command(
             [sys.executable, "-c", "import sys\nfor _ in range(500):\n    sys.stderr.write('E' * 512)\n    sys.stderr.flush()"],
             timeout_sec=5.0,
             max_bytes=4096,
+            allowed_executables=py_allow,
         )
         self.assertTrue(res_err["truncated"])
         self.assertTrue(res_err["stderr_truncated"])
@@ -276,6 +282,7 @@ class TestPgQuerySurgeon(unittest.TestCase):
             [sys.executable, "-c", "import sys\nfor _ in range(100):\n    sys.stdout.write('O' * 200)\n    sys.stderr.write('E' * 200)\n    sys.stdout.flush()\n    sys.stderr.flush()"],
             timeout_sec=5.0,
             max_bytes=4096,
+            allowed_executables=py_allow,
         )
         self.assertTrue(res_both["truncated"])
         self.assertLessEqual(len(res_both["stdout"].encode("utf-8")), 4096)
@@ -283,10 +290,12 @@ class TestPgQuerySurgeon(unittest.TestCase):
 
     def test_streaming_bounded_subprocess_timeout_missing_exec_and_unsafe_args(self):
         import os as _os
+        py_allow = {_os.path.basename(sys.executable)}
         res_to = run_bounded_command(
             [sys.executable, "-c", "import time; time.sleep(10)"],
             timeout_sec=0.25,
             max_bytes=4096,
+            allowed_executables=py_allow,
         )
         self.assertFalse(res_to["ok"])
         self.assertTrue(res_to["timed_out"])
@@ -295,19 +304,23 @@ class TestPgQuerySurgeon(unittest.TestCase):
         with self.assertRaises(ProcessLookupError):
             _os.kill(res_to["child_pid"], 0)
 
-        res_missing = run_bounded_command(["/nonexistent_binary_xyz_12345"])
+        res_missing = run_bounded_command(
+            ["/nonexistent_binary_xyz_12345"],
+            allowed_executables={"nonexistent_binary_xyz_12345"},
+        )
         self.assertFalse(res_missing["ok"])
         self.assertEqual(res_missing["returncode"], 127)
         self.assertEqual(res_missing["terminated_reason"], "executable_not_found")
 
-        res_unsafe = run_bounded_command(["python3", "arg_with_\x00_null"])
+        res_unsafe = run_bounded_command(["psql", "arg_with_\x00_null"])
         self.assertFalse(res_unsafe["ok"])
         self.assertEqual(res_unsafe["terminated_reason"], "invalid_arguments")
 
-        for priv_bin in ("sudo", "su", "pkexec"):
-            res_priv = run_bounded_command([priv_bin, "id"])
-            self.assertFalse(res_priv["ok"])
-            self.assertEqual(res_priv["terminated_reason"], "blocked_privilege_escalation")
+        for bad_bin in ("evil-binary", "escalation-wrapper", "arbitrary-tool"):
+            res_blocked = run_bounded_command([bad_bin, "id"])
+            self.assertFalse(res_blocked["ok"])
+            self.assertEqual(res_blocked["terminated_reason"], "blocked_executable")
+            self.assertIn("non-allowlisted executable", res_blocked["stderr"])
 
 
 
@@ -413,7 +426,7 @@ class TestPgQuerySurgeon(unittest.TestCase):
         with _tempfile.TemporaryDirectory() as tmpdir:
             marker_path = Path(tmpdir) / "grandchild_limit.pid"
             script = (
-                "import os, signal, subprocess, sys, time\n"
+                "import os, signal, sys, time\n"
                 "marker_str = sys.argv[1]\n"
                 "tmp_str = marker_str + '.tmp'\n"
                 "if hasattr(os, 'fork'):\n"
@@ -430,12 +443,7 @@ class TestPgQuerySurgeon(unittest.TestCase):
                 "    os.read(r_fd, 16)\n"
                 "    os.close(r_fd)\n"
                 "    gpid = pid\n"
-                "else:\n"
-                "    child = subprocess.Popen([sys.executable, '-c', "
-                "'import signal, sys, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); sys.stdout.write(\"READY\\n\"); sys.stdout.flush(); time.sleep(60)'], "
-                "stdout=subprocess.PIPE, text=True)\n"
-                "    child.stdout.readline()\n"
-                "    gpid = child.pid\n"
+
                 "with open(tmp_str, 'w', encoding='utf-8') as f:\n"
                 "    f.write(f'{gpid}\\n')\n"
                 "    f.flush()\n"
@@ -456,6 +464,7 @@ class TestPgQuerySurgeon(unittest.TestCase):
                     timeout_sec=5.0,
                     max_bytes=4096,
                     ready_file=marker_path,
+                    allowed_executables={_os.path.basename(sys.executable)},
                 )
                 if marker_path.exists():
                     grandchild_pid = int(marker_path.read_text(encoding="utf-8").strip())
@@ -481,7 +490,7 @@ class TestPgQuerySurgeon(unittest.TestCase):
         with _tempfile.TemporaryDirectory() as tmpdir:
             marker_path = Path(tmpdir) / "grandchild_timeout.pid"
             script = (
-                "import os, signal, subprocess, sys, time\n"
+                "import os, signal, sys, time\n"
                 "marker_str = sys.argv[1]\n"
                 "tmp_str = marker_str + '.tmp'\n"
                 "if hasattr(os, 'fork'):\n"
@@ -498,12 +507,7 @@ class TestPgQuerySurgeon(unittest.TestCase):
                 "    os.read(r_fd, 16)\n"
                 "    os.close(r_fd)\n"
                 "    gpid = pid\n"
-                "else:\n"
-                "    child = subprocess.Popen([sys.executable, '-c', "
-                "'import signal, sys, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); sys.stdout.write(\"READY\\n\"); sys.stdout.flush(); time.sleep(60)'], "
-                "stdout=subprocess.PIPE, text=True)\n"
-                "    child.stdout.readline()\n"
-                "    gpid = child.pid\n"
+
                 "with open(tmp_str, 'w', encoding='utf-8') as f:\n"
                 "    f.write(f'{gpid}\\n')\n"
                 "    f.flush()\n"
@@ -521,6 +525,7 @@ class TestPgQuerySurgeon(unittest.TestCase):
                     max_bytes=4096,
                     ready_file=marker_path,
                     startup_timeout_sec=10.0,
+                    allowed_executables={_os.path.basename(sys.executable)},
                 )
                 if marker_path.exists():
                     grandchild_pid = int(marker_path.read_text(encoding="utf-8").strip())
@@ -580,6 +585,7 @@ class TestPgQuerySurgeon(unittest.TestCase):
                     max_bytes=4096,
                     ready_file=marker_path,
                     startup_timeout_sec=10.0,
+                    allowed_executables={_os.path.basename(sys.executable)},
                 )
                 if marker_path.exists():
                     grandchild_pid = int(marker_path.read_text(encoding="utf-8").strip())
@@ -725,6 +731,16 @@ class TestPgQuerySurgeon(unittest.TestCase):
             pg_version=16,
         )
         self.assertValidSchema(rep_txt)
+
+    def test_security_allowlist_and_minimal_child_env(self):
+        from common import ALLOWED_EXECUTABLES, build_child_env
+        self.assertEqual(ALLOWED_EXECUTABLES, frozenset({"psql"}))
+        res = run_bounded_command(["sh", "-c", "echo should-not-run"])
+        self.assertFalse(res["ok"])
+        self.assertEqual(res["terminated_reason"], "blocked_executable")
+        env = build_child_env(source_env={"PATH": "/usr/bin", "PGHOST": "localhost", "SECRET_TOKEN": "nope"})
+        self.assertEqual(env, {"PATH": "/usr/bin", "PGHOST": "localhost"})
+
 
 if __name__ == "__main__":
     unittest.main()

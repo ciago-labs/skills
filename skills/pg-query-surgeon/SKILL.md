@@ -4,7 +4,7 @@ description: Analyze PostgreSQL schema migrations for lock hazards and optimize 
 license: MIT
 compatibility: Python 3.8+ standard library for offline SQL, DDL, and EXPLAIN JSON/text analysis. Optional live read-only inspection via psql when explicitly requested by the user.
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
   category: database-engineering
 ---
 

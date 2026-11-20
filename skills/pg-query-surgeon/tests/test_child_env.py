@@ -1,8 +1,6 @@
-import os
 import sys
 import unittest
 from pathlib import Path
-from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import common  # noqa: E402
@@ -17,8 +15,7 @@ class TestChildEnv(unittest.TestCase):
             "AWS_SECRET_ACCESS_KEY": "do-not-leak",
             "GITHUB_TOKEN": "do-not-leak",
         }
-        with mock.patch.dict(os.environ, fake, clear=True):
-            env = common.build_child_env()
+        env = common.build_child_env(source_env=fake)
         self.assertEqual(env["PGHOST"], "db.internal")
         self.assertEqual(env["PATH"], "/usr/bin")
         self.assertEqual(env["LC_ALL"], "C")

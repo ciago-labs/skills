@@ -31,7 +31,7 @@ All business logic in `scripts/common.py`, `scripts/check_migration_safety.py`, 
 ## 6. Permission Boundaries & Security Requirements
 - **Read-Only Default Execution**: All diagnostic tools execute in read-only mode. Any opt-in active profiler or file-scaffolding tool requires explicit boolean confirmation parameters (`enable_active_profiling=true` or `dry_run=false`) and path-traversal validation (`resolve_safe_child_path`).
 - **Mandatory Output Sanitization**: Every MCP tool response passes through the centralized credential redaction pipeline (`redact_credentials` / `scrub_text_secrets`) before serialization over JSON-RPC.
-- **True Streaming Subprocess Limits**: All external binary invocations enforce `run_bounded_command()` with streaming byte caps (`64 KiB` default), `shell=False`, process-group termination on limit/timeout violation, and hard blocks on `sudo`, `su`, `pkexec`, and mutating subcommands.
+- **True Streaming Subprocess Limits**: All external binary invocations enforce `run_bounded_command()` with streaming byte caps (`64 KiB` default), `shell=False`, process-group termination on limit/timeout violation, a strict executable allowlist, and refusal of mutating subcommands.
 
 ## 7. Transport Plan: `stdio` and Streamable HTTP
 1. **`stdio` Transport (Local IDE & CLI Agents)**:
