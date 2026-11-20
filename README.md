@@ -27,7 +27,7 @@ Pick the route for your agent.
 hermes skills install ciago-labs/skills/pg-query-surgeon
 ```
 
-Hermes scans community skills and may report a **CAUTION** verdict for this one, because the skill contains a subprocess runner and a blocklist of privilege-escalation commands (`sudo`, `su`, ...) that its read-only guard rejects. Review the source, then add `--force` to install. See [SECURITY.md](skills/pg-query-surgeon/SECURITY.md) for what each finding refers to.
+Hermes scans community skills before installing them. This skill runs one bounded child-process helper (strict executable allowlist, minimal environment, no shell) and reads a small allowlist of environment variables. Review [SECURITY.md](skills/pg-query-surgeon/SECURITY.md) for each control, and inspect the scan result with `hermes skills inspect ciago-labs/skills/pg-query-surgeon` before installing. Do not override the scanner.
 
 ### Cursor, Codex, Gemini CLI, OpenCode and other agents
 
