@@ -779,6 +779,21 @@ def split_sql_statements(sql_text: str) -> List[str]:
     return statements
 
 
+_CHILD_ENV_ALLOWLIST = {
+    "PATH", "HOME", "USER", "LOGNAME", "LANG", "TZ", "TMPDIR", "TERM",
+    "SSL_CERT_FILE", "SSL_CERT_DIR", "KRB5CCNAME",
+}
+
+
+def build_child_env() -> Dict[str, str]:
+    """Minimal environment for child processes: only what psql needs (PATH, locale, PG* settings), not the full parent environment."""
+    env: Dict[str, str] = {}
+    for key, value in os.environ.items():
+        if key in _CHILD_ENV_ALLOWLIST or key.startswith("PG") or key.startswith("LC_"):
+            env[key] = value
+    return env
+
+
 def run_readonly_psql_query(dsn: str, query: str, timeout_sec: float = 5.0) -> Dict[str, Any]:
     """Execute a strictly read-only catalog query via psql with enforced transaction_read_only, statement_timeout, and streaming bounded output."""
     upper = query.strip().upper()
@@ -788,7 +803,7 @@ def run_readonly_psql_query(dsn: str, query: str, timeout_sec: float = 5.0) -> D
             "error": "Refusing non-SELECT statement in read-only psql runner.",
             "stdout": "",
         }
-    env = dict(os.environ)
+    env = build_child_env()
     env["PGOPTIONS"] = "-c default_transaction_read_only=on -c statement_timeout=4000 -c lock_timeout=1500"
     cmd = ["psql", dsn, "--no-psqlrc", "-v", "ON_ERROR_STOP=1", "-t", "-A", "-c", query]
     res = run_bounded_command(cmd, timeout_sec=timeout_sec, max_bytes=MAX_SUBPROCESS_OUTPUT_BYTES, env=env)
