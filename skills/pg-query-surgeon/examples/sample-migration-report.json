@@ -1,0 +1,1429 @@
+{
+  "status": "critical",
+  "timestamp": "2026-11-17T17:15:13.248457+00:00",
+  "platform": {
+    "system": "Linux",
+    "release": "6.12.105+"
+  },
+  "tool_versions": {
+    "python": "3.11.2",
+    "target_pg_version": "16"
+  },
+  "findings": [
+    {
+      "id": "MIG-TIMEOUT-002",
+      "category": "lock_queue_hazard",
+      "severity": "medium",
+      "classification": "verified",
+      "lock_mode": "lock_queue_amplification",
+      "statement_index": 2,
+      "statement": "CREATE INDEX idx_orders_customer_status ON orders (customer_id, status)",
+      "title": "Statement #2: Lock-sensitive DDL executes without an active `lock_timeout` in effect at this position",
+      "evidence": {
+        "statement_index": 2,
+        "in_transaction": true,
+        "effective_lock_timeout": null,
+        "effective_statement_timeout": null
+      },
+      "likely_causes": [
+        "No SET lock_timeout was executed prior to this statement (or a prior SET LOCAL lock_timeout expired on COMMIT/ROLLBACK)"
+      ],
+      "confidence": "high",
+      "recommendation": "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL."
+    },
+    {
+      "id": "MIG-IDX-002",
+      "category": "locking",
+      "severity": "high",
+      "classification": "verified",
+      "lock_mode": "SHARE (blocks writes)",
+      "statement_index": 2,
+      "statement": "CREATE INDEX idx_orders_customer_status ON orders (customer_id, status)",
+      "title": "Statement #2: CREATE INDEX without CONCURRENTLY acquires a SHARE lock that blocks all writes",
+      "evidence": {
+        "concurrently": false,
+        "in_transaction": true,
+        "lock_mode": "SHARE"
+      },
+      "likely_causes": [
+        "Standard CREATE INDEX holds SHARE lock for the entire index build"
+      ],
+      "confidence": "high",
+      "recommendation": "Rewrite as CREATE INDEX CONCURRENTLY outside of a transaction block."
+    },
+    {
+      "id": "MIG-TXN-003",
+      "category": "transaction_hazard",
+      "severity": "critical",
+      "classification": "verified",
+      "lock_mode": "SHARE UPDATE EXCLUSIVE",
+      "statement_index": 3,
+      "statement": "CREATE INDEX CONCURRENTLY idx_orders_concurrent_in_tx ON orders (created_at)",
+      "title": "Statement #3: CONCURRENTLY operation inside an open BEGIN transaction block will fail at runtime",
+      "evidence": {
+        "in_transaction_at_statement": true,
+        "has_concurrently": true,
+        "statement_index": 3
+      },
+      "likely_causes": [
+        "PostgreSQL prohibits CONCURRENTLY index/partition operations inside explicit transaction blocks"
+      ],
+      "confidence": "high",
+      "recommendation": "Commit the preceding transaction (`COMMIT;`) before executing CONCURRENTLY statements, or move them to a non-transactional migration file."
+    },
+    {
+      "id": "MIG-TIMEOUT-004",
+      "category": "lock_queue_hazard",
+      "severity": "medium",
+      "classification": "verified",
+      "lock_mode": "lock_queue_amplification",
+      "statement_index": 4,
+      "statement": "ALTER TABLE orders ALTER COLUMN total_cents TYPE BIGINT",
+      "title": "Statement #4: Lock-sensitive DDL executes without an active `lock_timeout` in effect at this position",
+      "evidence": {
+        "statement_index": 4,
+        "in_transaction": true,
+        "effective_lock_timeout": null,
+        "effective_statement_timeout": null
+      },
+      "likely_causes": [
+        "No SET lock_timeout was executed prior to this statement (or a prior SET LOCAL lock_timeout expired on COMMIT/ROLLBACK)"
+      ],
+      "confidence": "high",
+      "recommendation": "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL."
+    },
+    {
+      "id": "MIG-REWRITE-004",
+      "category": "table_rewrite",
+      "severity": "critical",
+      "classification": "verified",
+      "lock_mode": "ACCESS EXCLUSIVE (blocks reads and writes)",
+      "statement_index": 4,
+      "statement": "ALTER TABLE orders ALTER COLUMN total_cents TYPE BIGINT",
+      "title": "Statement #4: ALTER COLUMN TYPE acquires ACCESS EXCLUSIVE lock and triggers a full table rewrite",
+      "evidence": {
+        "operation": "ALTER COLUMN TYPE",
+        "pg_version": 16,
+        "in_transaction": true
+      },
+      "likely_causes": [
+        "Changing column physical representation rewrites every heap page under ACCESS EXCLUSIVE lock"
+      ],
+      "confidence": "high",
+      "recommendation": "Use expand-and-contract: add a new column, dual-write via trigger or application, backfill in small batches, and swap."
+    },
+    {
+      "id": "MIG-TIMEOUT-005",
+      "category": "lock_queue_hazard",
+      "severity": "medium",
+      "classification": "verified",
+      "lock_mode": "lock_queue_amplification",
+      "statement_index": 5,
+      "statement": "ALTER TABLE orders ADD COLUMN audit_token TEXT DEFAULT gen_random_uuid()::text",
+      "title": "Statement #5: Lock-sensitive DDL executes without an active `lock_timeout` in effect at this position",
+      "evidence": {
+        "statement_index": 5,
+        "in_transaction": true,
+        "effective_lock_timeout": null,
+        "effective_statement_timeout": null
+      },
+      "likely_causes": [
+        "No SET lock_timeout was executed prior to this statement (or a prior SET LOCAL lock_timeout expired on COMMIT/ROLLBACK)"
+      ],
+      "confidence": "high",
+      "recommendation": "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL."
+    },
+    {
+      "id": "MIG-ADDCOL-005",
+      "category": "table_rewrite",
+      "severity": "high",
+      "classification": "verified",
+      "lock_mode": "ACCESS EXCLUSIVE",
+      "statement_index": 5,
+      "statement": "ALTER TABLE orders ADD COLUMN audit_token TEXT DEFAULT gen_random_uuid()::text",
+      "title": "Statement #5: ADD COLUMN with volatile DEFAULT causes table rewrite or blocking index build",
+      "evidence": {
+        "pg_version": 16,
+        "volatile_default": true,
+        "inline_pk_unique": false
+      },
+      "likely_causes": [
+        "Volatile defaults, inline unique constraints, or PostgreSQL < 11 cannot complete in catalog metadata alone"
+      ],
+      "confidence": "high",
+      "recommendation": "Add the column as nullable without a default, backfill in batched UPDATEs, create unique index CONCURRENTLY, and set DEFAULT."
+    },
+    {
+      "id": "MIG-TIMEOUT-006",
+      "category": "lock_queue_hazard",
+      "severity": "medium",
+      "classification": "verified",
+      "lock_mode": "lock_queue_amplification",
+      "statement_index": 6,
+      "statement": "ALTER TABLE orders ALTER COLUMN shipping_address SET NOT NULL",
+      "title": "Statement #6: Lock-sensitive DDL executes without an active `lock_timeout` in effect at this position",
+      "evidence": {
+        "statement_index": 6,
+        "in_transaction": true,
+        "effective_lock_timeout": null,
+        "effective_statement_timeout": null
+      },
+      "likely_causes": [
+        "No SET lock_timeout was executed prior to this statement (or a prior SET LOCAL lock_timeout expired on COMMIT/ROLLBACK)"
+      ],
+      "confidence": "high",
+      "recommendation": "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL."
+    },
+    {
+      "id": "MIG-NOTNULL-006",
+      "category": "locking",
+      "severity": "high",
+      "classification": "verified",
+      "lock_mode": "ACCESS EXCLUSIVE",
+      "statement_index": 6,
+      "statement": "ALTER TABLE orders ALTER COLUMN shipping_address SET NOT NULL",
+      "title": "Statement #6: ALTER COLUMN `shipping_address` SET NOT NULL performs a full sequential scan under ACCESS EXCLUSIVE lock",
+      "evidence": {
+        "column": "shipping_address",
+        "pg_version": 16,
+        "backed_by_validated_check": false
+      },
+      "likely_causes": [
+        "PostgreSQL < 12 always scans the table for SET NOT NULL; PostgreSQL 12+ requires a preceding validated CHECK (col IS NOT NULL) constraint to skip the scan"
+      ],
+      "confidence": "high",
+      "recommendation": "Add `CHECK (shipping_address IS NOT NULL) NOT VALID`, run `VALIDATE CONSTRAINT` (`SHARE UPDATE EXCLUSIVE`), and then run `SET NOT NULL` on PostgreSQL 12+."
+    },
+    {
+      "id": "MIG-TIMEOUT-007",
+      "category": "lock_queue_hazard",
+      "severity": "medium",
+      "classification": "verified",
+      "lock_mode": "lock_queue_amplification",
+      "statement_index": 7,
+      "statement": "ALTER TABLE orders ADD CONSTRAINT fk_orders_merchant FOREIGN KEY (merchant_id) REFERENCES merchants (id)",
+      "title": "Statement #7: Lock-sensitive DDL executes without an active `lock_timeout` in effect at this position",
+      "evidence": {
+        "statement_index": 7,
+        "in_transaction": true,
+        "effective_lock_timeout": null,
+        "effective_statement_timeout": null
+      },
+      "likely_causes": [
+        "No SET lock_timeout was executed prior to this statement (or a prior SET LOCAL lock_timeout expired on COMMIT/ROLLBACK)"
+      ],
+      "confidence": "high",
+      "recommendation": "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL."
+    },
+    {
+      "id": "MIG-FK-007",
+      "category": "locking",
+      "severity": "high",
+      "classification": "verified",
+      "lock_mode": "SHARE ROW EXCLUSIVE / ACCESS EXCLUSIVE",
+      "statement_index": 7,
+      "statement": "ALTER TABLE orders ADD CONSTRAINT fk_orders_merchant FOREIGN KEY (merchant_id) REFERENCES merchants (id)",
+      "title": "Statement #7: Adding FOREIGN KEY or CHECK constraint without NOT VALID validates all existing rows under heavy lock",
+      "evidence": {
+        "not_valid_present": false,
+        "statement_index": 7
+      },
+      "likely_causes": [
+        "Immediate constraint validation scans the table while blocking concurrent writes"
+      ],
+      "confidence": "high",
+      "recommendation": "Append NOT VALID to ADD CONSTRAINT, then execute ALTER TABLE ... VALIDATE CONSTRAINT (`SHARE UPDATE EXCLUSIVE`) in a separate step."
+    },
+    {
+      "id": "MIG-TIMEOUT-008",
+      "category": "lock_queue_hazard",
+      "severity": "medium",
+      "classification": "verified",
+      "lock_mode": "lock_queue_amplification",
+      "statement_index": 8,
+      "statement": "ALTER TABLE orders DROP COLUMN legacy_coupon_code",
+      "title": "Statement #8: Lock-sensitive DDL executes without an active `lock_timeout` in effect at this position",
+      "evidence": {
+        "statement_index": 8,
+        "in_transaction": true,
+        "effective_lock_timeout": null,
+        "effective_statement_timeout": null
+      },
+      "likely_causes": [
+        "No SET lock_timeout was executed prior to this statement (or a prior SET LOCAL lock_timeout expired on COMMIT/ROLLBACK)"
+      ],
+      "confidence": "high",
+      "recommendation": "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL."
+    },
+    {
+      "id": "MIG-DESTRUCT-008",
+      "category": "destructive_change",
+      "severity": "high",
+      "classification": "verified",
+      "lock_mode": "ACCESS EXCLUSIVE",
+      "statement_index": 8,
+      "statement": "ALTER TABLE orders DROP COLUMN legacy_coupon_code",
+      "title": "Statement #8: Destructive schema operation (DROP/TRUNCATE) detected; breaks running application instances referencing the column/table",
+      "evidence": {
+        "destructive": true,
+        "statement_index": 8
+      },
+      "likely_causes": [
+        "Dropping columns or tables while old application code is still deployed causes immediate query failures and irreversible data loss"
+      ],
+      "confidence": "high",
+      "recommendation": "Deploy application code removing all references to the column first, verify zero queries reference it, and drop in a subsequent release."
+    },
+    {
+      "id": "SQL-FUNC-001",
+      "category": "sargability",
+      "severity": "high",
+      "classification": "verified",
+      "statement_index": 1,
+      "statement": "SELECT * FROM orders WHERE LOWER(customer_email) = 'alice@example.com' AND status = 'PAID' ORDER BY created_at DESC OFFSET 5000",
+      "title": "Non-SARGable function call `LOWER(customer_email)` in WHERE clause forces sequential scan unless expression index exists",
+      "evidence": {
+        "function": "LOWER",
+        "column": "customer_email"
+      },
+      "likely_causes": [
+        "Applying a function to a column prevents plain column B-Tree index lookups"
+      ],
+      "confidence": "high",
+      "recommendation": "Rewrite predicate as a range filter (for dates) or create an expression index on `(LOWER(customer_email))`."
+    },
+    {
+      "id": "SQL-OFFSET-001",
+      "category": "pagination",
+      "severity": "medium",
+      "classification": "verified",
+      "statement_index": 1,
+      "statement": "SELECT * FROM orders WHERE LOWER(customer_email) = 'alice@example.com' AND status = 'PAID' ORDER BY created_at DESC OFFSET 5000",
+      "title": "Deep OFFSET pagination (OFFSET 5000) scans and discards 5000 rows on every query",
+      "evidence": {
+        "offset": 5000
+      },
+      "likely_causes": [
+        "PostgreSQL must materialize and skip all preceding rows to satisfy OFFSET"
+      ],
+      "confidence": "high",
+      "recommendation": "Replace OFFSET pagination with keyset (seek) pagination: `WHERE (created_at, id) < ($1, $2) ORDER BY created_at DESC, id DESC LIMIT N`."
+    },
+    {
+      "id": "SQL-STAR-001",
+      "category": "projection",
+      "severity": "medium",
+      "classification": "heuristic",
+      "statement_index": 1,
+      "statement": "SELECT * FROM orders WHERE LOWER(customer_email) = 'alice@example.com' AND status = 'PAID' ORDER BY created_at DESC OFFSET 5000",
+      "title": "Unbounded SELECT * fetches wide rows (including TOAST columns) and prevents Index-Only Scans",
+      "evidence": {
+        "select_star": true,
+        "has_limit": false
+      },
+      "likely_causes": [
+        "Fetching all columns forces heap page fetches even when filter columns are covered by an index"
+      ],
+      "confidence": "medium",
+      "recommendation": "Project only required columns to enable Index-Only Scans and reduce network/TOAST I/O."
+    },
+    {
+      "id": "SQL-LIKE-002",
+      "category": "index_prevented",
+      "severity": "high",
+      "classification": "verified",
+      "statement_index": 2,
+      "statement": "SELECT id, total_cents FROM orders WHERE notes ILIKE '%urgent%' AND created_at >= '2026-01-01'",
+      "title": "Leading wildcard LIKE/ILIKE ('%pattern') prevents standard B-Tree index usage",
+      "evidence": {
+        "pattern": "LIKE '%...'"
+      },
+      "likely_causes": [
+        "B-Tree indexes are left-anchored and cannot seek on a leading wildcard"
+      ],
+      "confidence": "high",
+      "recommendation": "Enable pg_trgm extension and create a GIN trigram index: `CREATE INDEX CONCURRENTLY idx_trgm ON table USING gin (col gin_trgm_ops);`"
+    },
+    {
+      "id": "SQL-NOTIN-003",
+      "category": "join_efficiency",
+      "severity": "high",
+      "classification": "verified",
+      "statement_index": 3,
+      "statement": "SELECT id FROM customers WHERE id NOT IN (SELECT customer_id FROM orders)",
+      "title": "NOT IN (SELECT ...) uses hashed/materialized subplan and returns 0 rows if any NULL exists in subquery",
+      "evidence": {
+        "construct": "NOT IN (SELECT ...)"
+      },
+      "likely_causes": [
+        "SQL three-valued logic forces expensive NULL semantics checks in PostgreSQL"
+      ],
+      "confidence": "high",
+      "recommendation": "Rewrite `NOT IN (SELECT ...)` as `NOT EXISTS (SELECT 1 FROM ... WHERE ...)` for anti-join optimization and safe NULL semantics."
+    },
+    {
+      "id": "SQL-NPLUS1-001",
+      "category": "n_plus_one",
+      "severity": "high",
+      "classification": "verified",
+      "statement_index": 0,
+      "statement": "SELECT ID, STATUS FROM ORDERS WHERE CUSTOMER_ID = ?",
+      "title": "N+1 query pattern detected: identical query shape repeated 4 times in workload trace",
+      "evidence": {
+        "fingerprint": "SELECT ID, STATUS FROM ORDERS WHERE CUSTOMER_ID = ?",
+        "execution_count": 4
+      },
+      "likely_causes": [
+        "Application loop issuing per-entity SELECT queries instead of batched IN/ANY($1) or JOIN fetch"
+      ],
+      "confidence": "high",
+      "recommendation": "Batch lookups using `WHERE id = ANY($1::bigint[])` or eager-load via JOIN."
+    },
+    {
+      "id": "PLAN-EST-001",
+      "category": "cardinality_misestimate",
+      "severity": "medium",
+      "classification": "verified",
+      "node_type": "Sort",
+      "relation": "unknown_relation",
+      "title": "Row estimation mismatch (59.2x) on `Sort` (unknown_relation): estimated 250 vs actual 14800",
+      "evidence": {
+        "estimated_rows": 250,
+        "actual_rows": 14800,
+        "ratio": 59.2
+      },
+      "likely_causes": [
+        "Stale table statistics in pg_statistic or correlated multi-column predicates without extended statistics"
+      ],
+      "confidence": "high",
+      "recommendation": "Run `ANALYZE unknown_relation;` and consider `CREATE STATISTICS` for correlated columns on `unknown_relation`."
+    },
+    {
+      "id": "PLAN-SPILL-001",
+      "category": "memory_spill",
+      "severity": "high",
+      "classification": "verified",
+      "node_type": "Sort",
+      "relation": "unknown_relation",
+      "title": "`Sort` spilled to disk (Sort Space Type=Disk, Temp Written Blocks=2048, Hash Batches=1)",
+      "evidence": {
+        "sort_method": "external merge",
+        "sort_space_type": "Disk",
+        "sort_space_used_kb": 16384,
+        "temp_written_blocks": 2048,
+        "hash_batches": 1
+      },
+      "likely_causes": [
+        "Operation memory exceeded session work_mem setting"
+      ],
+      "confidence": "high",
+      "recommendation": "Provide an index matching the ORDER BY clause to eliminate the sort, or raise session `work_mem` for heavy reporting/hash-join queries."
+    },
+    {
+      "id": "PLAN-SEQ-002",
+      "category": "sequential_scan",
+      "severity": "high",
+      "classification": "verified",
+      "node_type": "Seq Scan",
+      "relation": "orders",
+      "title": "Large Sequential Scan on `orders` (rows_removed=485200, actual_rows=14800, est_rows=250)",
+      "evidence": {
+        "relation": "orders",
+        "filter": "((status = 'PAID'::text) AND (customer_id = 42))",
+        "actual_rows": 14800,
+        "rows_removed_by_filter": 485200,
+        "selectivity_pct": 2.96,
+        "shared_read_blocks": 9850
+      },
+      "likely_causes": [
+        "Missing B-Tree or partial index on `orders` for filter `((status = 'PAID'::text) AND (customer_id = 42))`"
+      ],
+      "confidence": "high",
+      "recommendation": "Create a targeted index on `orders` covering columns in `((status = 'PAID'::text) AND (customer_id = 42))` using CREATE INDEX CONCURRENTLY."
+    },
+    {
+      "id": "PLAN-EST-002",
+      "category": "cardinality_misestimate",
+      "severity": "medium",
+      "classification": "verified",
+      "node_type": "Seq Scan",
+      "relation": "orders",
+      "title": "Row estimation mismatch (59.2x) on `Seq Scan` (orders): estimated 250 vs actual 14800",
+      "evidence": {
+        "estimated_rows": 250,
+        "actual_rows": 14800,
+        "ratio": 59.2
+      },
+      "likely_causes": [
+        "Stale table statistics in pg_statistic or correlated multi-column predicates without extended statistics"
+      ],
+      "confidence": "high",
+      "recommendation": "Run `ANALYZE orders;` and consider `CREATE STATISTICS` for correlated columns on `orders`."
+    },
+    {
+      "id": "SCH-INT4-MERCHANTS-ID",
+      "category": "type_safety",
+      "severity": "medium",
+      "classification": "heuristic",
+      "table": "merchants",
+      "title": "32-bit integer identifier `merchants.id` (SERIAL) risks 2.14B sequence exhaustion in high-growth tables",
+      "evidence": {
+        "table": "merchants",
+        "column": "id",
+        "type": "SERIAL"
+      },
+      "likely_causes": [
+        "Using 4-byte integer/serial instead of 8-byte BIGINT"
+      ],
+      "confidence": "medium",
+      "recommendation": "Prefer `BIGINT` (`BIGSERIAL` or `GENERATED ALWAYS AS IDENTITY`) for primary and foreign key columns."
+    },
+    {
+      "id": "SCH-FKIDX-ORDERS-MERCHANT_ID",
+      "category": "missing_fk_index",
+      "severity": "high",
+      "classification": "verified",
+      "table": "orders",
+      "title": "Unindexed foreign key `orders.merchant_id` causes sequential scans on parent DELETE/UPDATE and join queries",
+      "evidence": {
+        "table": "orders",
+        "foreign_key_column": "merchant_id"
+      },
+      "likely_causes": [
+        "PostgreSQL automatically indexes PRIMARY KEY and UNIQUE constraints, but never automatically indexes FOREIGN KEY columns"
+      ],
+      "confidence": "high",
+      "recommendation": "Run `CREATE INDEX CONCURRENTLY idx_orders_merchant_id ON orders (merchant_id);`"
+    },
+    {
+      "id": "SCH-INT4-ORDERS-ID",
+      "category": "type_safety",
+      "severity": "medium",
+      "classification": "heuristic",
+      "table": "orders",
+      "title": "32-bit integer identifier `orders.id` (INT) risks 2.14B sequence exhaustion in high-growth tables",
+      "evidence": {
+        "table": "orders",
+        "column": "id",
+        "type": "INT"
+      },
+      "likely_causes": [
+        "Using 4-byte integer/serial instead of 8-byte BIGINT"
+      ],
+      "confidence": "medium",
+      "recommendation": "Prefer `BIGINT` (`BIGSERIAL` or `GENERATED ALWAYS AS IDENTITY`) for primary and foreign key columns."
+    },
+    {
+      "id": "SCH-INT4-ORDERS-MERCHANT_ID",
+      "category": "type_safety",
+      "severity": "medium",
+      "classification": "heuristic",
+      "table": "orders",
+      "title": "32-bit integer identifier `orders.merchant_id` (INT) risks 2.14B sequence exhaustion in high-growth tables",
+      "evidence": {
+        "table": "orders",
+        "column": "merchant_id",
+        "type": "INT"
+      },
+      "likely_causes": [
+        "Using 4-byte integer/serial instead of 8-byte BIGINT"
+      ],
+      "confidence": "medium",
+      "recommendation": "Prefer `BIGINT` (`BIGSERIAL` or `GENERATED ALWAYS AS IDENTITY`) for primary and foreign key columns."
+    },
+    {
+      "id": "SCH-PK-AUDIT_EVENTS",
+      "category": "schema_integrity",
+      "severity": "high",
+      "classification": "verified",
+      "table": "audit_events",
+      "title": "Table `audit_events` has no PRIMARY KEY (breaks logical replication and bloat remediation tools like pg_repack)",
+      "evidence": {
+        "table": "audit_events",
+        "has_pk": false
+      },
+      "likely_causes": [
+        "Table created without an explicit PRIMARY KEY constraint"
+      ],
+      "confidence": "high",
+      "recommendation": "Add a BIGINT GENERATED ALWAYS AS IDENTITY or UUIDv7 primary key to `audit_events`."
+    }
+  ],
+  "metrics": {
+    "migration_safety": {
+      "status": "critical",
+      "timestamp": "2026-11-17T17:15:13.245522+00:00",
+      "platform": {
+        "system": "Linux",
+        "release": "6.12.105+"
+      },
+      "tool_versions": {
+        "python": "3.11.2",
+        "target_pg_version": "16"
+      },
+      "findings": [
+        {
+          "id": "MIG-TIMEOUT-002",
+          "category": "lock_queue_hazard",
+          "severity": "medium",
+          "classification": "verified",
+          "lock_mode": "lock_queue_amplification",
+          "statement_index": 2,
+          "statement": "CREATE INDEX idx_orders_customer_status ON orders (customer_id, status)",
+          "title": "Statement #2: Lock-sensitive DDL executes without an active `lock_timeout` in effect at this position",
+          "evidence": {
+            "statement_index": 2,
+            "in_transaction": true,
+            "effective_lock_timeout": null,
+            "effective_statement_timeout": null
+          },
+          "likely_causes": [
+            "No SET lock_timeout was executed prior to this statement (or a prior SET LOCAL lock_timeout expired on COMMIT/ROLLBACK)"
+          ],
+          "confidence": "high",
+          "recommendation": "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL."
+        },
+        {
+          "id": "MIG-IDX-002",
+          "category": "locking",
+          "severity": "high",
+          "classification": "verified",
+          "lock_mode": "SHARE (blocks writes)",
+          "statement_index": 2,
+          "statement": "CREATE INDEX idx_orders_customer_status ON orders (customer_id, status)",
+          "title": "Statement #2: CREATE INDEX without CONCURRENTLY acquires a SHARE lock that blocks all writes",
+          "evidence": {
+            "concurrently": false,
+            "in_transaction": true,
+            "lock_mode": "SHARE"
+          },
+          "likely_causes": [
+            "Standard CREATE INDEX holds SHARE lock for the entire index build"
+          ],
+          "confidence": "high",
+          "recommendation": "Rewrite as CREATE INDEX CONCURRENTLY outside of a transaction block."
+        },
+        {
+          "id": "MIG-TXN-003",
+          "category": "transaction_hazard",
+          "severity": "critical",
+          "classification": "verified",
+          "lock_mode": "SHARE UPDATE EXCLUSIVE",
+          "statement_index": 3,
+          "statement": "CREATE INDEX CONCURRENTLY idx_orders_concurrent_in_tx ON orders (created_at)",
+          "title": "Statement #3: CONCURRENTLY operation inside an open BEGIN transaction block will fail at runtime",
+          "evidence": {
+            "in_transaction_at_statement": true,
+            "has_concurrently": true,
+            "statement_index": 3
+          },
+          "likely_causes": [
+            "PostgreSQL prohibits CONCURRENTLY index/partition operations inside explicit transaction blocks"
+          ],
+          "confidence": "high",
+          "recommendation": "Commit the preceding transaction (`COMMIT;`) before executing CONCURRENTLY statements, or move them to a non-transactional migration file."
+        },
+        {
+          "id": "MIG-TIMEOUT-004",
+          "category": "lock_queue_hazard",
+          "severity": "medium",
+          "classification": "verified",
+          "lock_mode": "lock_queue_amplification",
+          "statement_index": 4,
+          "statement": "ALTER TABLE orders ALTER COLUMN total_cents TYPE BIGINT",
+          "title": "Statement #4: Lock-sensitive DDL executes without an active `lock_timeout` in effect at this position",
+          "evidence": {
+            "statement_index": 4,
+            "in_transaction": true,
+            "effective_lock_timeout": null,
+            "effective_statement_timeout": null
+          },
+          "likely_causes": [
+            "No SET lock_timeout was executed prior to this statement (or a prior SET LOCAL lock_timeout expired on COMMIT/ROLLBACK)"
+          ],
+          "confidence": "high",
+          "recommendation": "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL."
+        },
+        {
+          "id": "MIG-REWRITE-004",
+          "category": "table_rewrite",
+          "severity": "critical",
+          "classification": "verified",
+          "lock_mode": "ACCESS EXCLUSIVE (blocks reads and writes)",
+          "statement_index": 4,
+          "statement": "ALTER TABLE orders ALTER COLUMN total_cents TYPE BIGINT",
+          "title": "Statement #4: ALTER COLUMN TYPE acquires ACCESS EXCLUSIVE lock and triggers a full table rewrite",
+          "evidence": {
+            "operation": "ALTER COLUMN TYPE",
+            "pg_version": 16,
+            "in_transaction": true
+          },
+          "likely_causes": [
+            "Changing column physical representation rewrites every heap page under ACCESS EXCLUSIVE lock"
+          ],
+          "confidence": "high",
+          "recommendation": "Use expand-and-contract: add a new column, dual-write via trigger or application, backfill in small batches, and swap."
+        },
+        {
+          "id": "MIG-TIMEOUT-005",
+          "category": "lock_queue_hazard",
+          "severity": "medium",
+          "classification": "verified",
+          "lock_mode": "lock_queue_amplification",
+          "statement_index": 5,
+          "statement": "ALTER TABLE orders ADD COLUMN audit_token TEXT DEFAULT gen_random_uuid()::text",
+          "title": "Statement #5: Lock-sensitive DDL executes without an active `lock_timeout` in effect at this position",
+          "evidence": {
+            "statement_index": 5,
+            "in_transaction": true,
+            "effective_lock_timeout": null,
+            "effective_statement_timeout": null
+          },
+          "likely_causes": [
+            "No SET lock_timeout was executed prior to this statement (or a prior SET LOCAL lock_timeout expired on COMMIT/ROLLBACK)"
+          ],
+          "confidence": "high",
+          "recommendation": "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL."
+        },
+        {
+          "id": "MIG-ADDCOL-005",
+          "category": "table_rewrite",
+          "severity": "high",
+          "classification": "verified",
+          "lock_mode": "ACCESS EXCLUSIVE",
+          "statement_index": 5,
+          "statement": "ALTER TABLE orders ADD COLUMN audit_token TEXT DEFAULT gen_random_uuid()::text",
+          "title": "Statement #5: ADD COLUMN with volatile DEFAULT causes table rewrite or blocking index build",
+          "evidence": {
+            "pg_version": 16,
+            "volatile_default": true,
+            "inline_pk_unique": false
+          },
+          "likely_causes": [
+            "Volatile defaults, inline unique constraints, or PostgreSQL < 11 cannot complete in catalog metadata alone"
+          ],
+          "confidence": "high",
+          "recommendation": "Add the column as nullable without a default, backfill in batched UPDATEs, create unique index CONCURRENTLY, and set DEFAULT."
+        },
+        {
+          "id": "MIG-TIMEOUT-006",
+          "category": "lock_queue_hazard",
+          "severity": "medium",
+          "classification": "verified",
+          "lock_mode": "lock_queue_amplification",
+          "statement_index": 6,
+          "statement": "ALTER TABLE orders ALTER COLUMN shipping_address SET NOT NULL",
+          "title": "Statement #6: Lock-sensitive DDL executes without an active `lock_timeout` in effect at this position",
+          "evidence": {
+            "statement_index": 6,
+            "in_transaction": true,
+            "effective_lock_timeout": null,
+            "effective_statement_timeout": null
+          },
+          "likely_causes": [
+            "No SET lock_timeout was executed prior to this statement (or a prior SET LOCAL lock_timeout expired on COMMIT/ROLLBACK)"
+          ],
+          "confidence": "high",
+          "recommendation": "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL."
+        },
+        {
+          "id": "MIG-NOTNULL-006",
+          "category": "locking",
+          "severity": "high",
+          "classification": "verified",
+          "lock_mode": "ACCESS EXCLUSIVE",
+          "statement_index": 6,
+          "statement": "ALTER TABLE orders ALTER COLUMN shipping_address SET NOT NULL",
+          "title": "Statement #6: ALTER COLUMN `shipping_address` SET NOT NULL performs a full sequential scan under ACCESS EXCLUSIVE lock",
+          "evidence": {
+            "column": "shipping_address",
+            "pg_version": 16,
+            "backed_by_validated_check": false
+          },
+          "likely_causes": [
+            "PostgreSQL < 12 always scans the table for SET NOT NULL; PostgreSQL 12+ requires a preceding validated CHECK (col IS NOT NULL) constraint to skip the scan"
+          ],
+          "confidence": "high",
+          "recommendation": "Add `CHECK (shipping_address IS NOT NULL) NOT VALID`, run `VALIDATE CONSTRAINT` (`SHARE UPDATE EXCLUSIVE`), and then run `SET NOT NULL` on PostgreSQL 12+."
+        },
+        {
+          "id": "MIG-TIMEOUT-007",
+          "category": "lock_queue_hazard",
+          "severity": "medium",
+          "classification": "verified",
+          "lock_mode": "lock_queue_amplification",
+          "statement_index": 7,
+          "statement": "ALTER TABLE orders ADD CONSTRAINT fk_orders_merchant FOREIGN KEY (merchant_id) REFERENCES merchants (id)",
+          "title": "Statement #7: Lock-sensitive DDL executes without an active `lock_timeout` in effect at this position",
+          "evidence": {
+            "statement_index": 7,
+            "in_transaction": true,
+            "effective_lock_timeout": null,
+            "effective_statement_timeout": null
+          },
+          "likely_causes": [
+            "No SET lock_timeout was executed prior to this statement (or a prior SET LOCAL lock_timeout expired on COMMIT/ROLLBACK)"
+          ],
+          "confidence": "high",
+          "recommendation": "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL."
+        },
+        {
+          "id": "MIG-FK-007",
+          "category": "locking",
+          "severity": "high",
+          "classification": "verified",
+          "lock_mode": "SHARE ROW EXCLUSIVE / ACCESS EXCLUSIVE",
+          "statement_index": 7,
+          "statement": "ALTER TABLE orders ADD CONSTRAINT fk_orders_merchant FOREIGN KEY (merchant_id) REFERENCES merchants (id)",
+          "title": "Statement #7: Adding FOREIGN KEY or CHECK constraint without NOT VALID validates all existing rows under heavy lock",
+          "evidence": {
+            "not_valid_present": false,
+            "statement_index": 7
+          },
+          "likely_causes": [
+            "Immediate constraint validation scans the table while blocking concurrent writes"
+          ],
+          "confidence": "high",
+          "recommendation": "Append NOT VALID to ADD CONSTRAINT, then execute ALTER TABLE ... VALIDATE CONSTRAINT (`SHARE UPDATE EXCLUSIVE`) in a separate step."
+        },
+        {
+          "id": "MIG-TIMEOUT-008",
+          "category": "lock_queue_hazard",
+          "severity": "medium",
+          "classification": "verified",
+          "lock_mode": "lock_queue_amplification",
+          "statement_index": 8,
+          "statement": "ALTER TABLE orders DROP COLUMN legacy_coupon_code",
+          "title": "Statement #8: Lock-sensitive DDL executes without an active `lock_timeout` in effect at this position",
+          "evidence": {
+            "statement_index": 8,
+            "in_transaction": true,
+            "effective_lock_timeout": null,
+            "effective_statement_timeout": null
+          },
+          "likely_causes": [
+            "No SET lock_timeout was executed prior to this statement (or a prior SET LOCAL lock_timeout expired on COMMIT/ROLLBACK)"
+          ],
+          "confidence": "high",
+          "recommendation": "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL."
+        },
+        {
+          "id": "MIG-DESTRUCT-008",
+          "category": "destructive_change",
+          "severity": "high",
+          "classification": "verified",
+          "lock_mode": "ACCESS EXCLUSIVE",
+          "statement_index": 8,
+          "statement": "ALTER TABLE orders DROP COLUMN legacy_coupon_code",
+          "title": "Statement #8: Destructive schema operation (DROP/TRUNCATE) detected; breaks running application instances referencing the column/table",
+          "evidence": {
+            "destructive": true,
+            "statement_index": 8
+          },
+          "likely_causes": [
+            "Dropping columns or tables while old application code is still deployed causes immediate query failures and irreversible data loss"
+          ],
+          "confidence": "high",
+          "recommendation": "Deploy application code removing all references to the column first, verify zero queries reference it, and drop in a subsequent release."
+        }
+      ],
+      "metrics": {
+        "parser_engine": "sequential_state_machine_sql_analyzer",
+        "statement_count": 9,
+        "risk_score": 100,
+        "risk_classification": "CRITICAL",
+        "has_explicit_transaction": true,
+        "in_transaction_at_eof": false,
+        "transactions_opened": 1,
+        "transactions_committed": 1,
+        "transactions_rolled_back": 0,
+        "has_lock_timeout": false,
+        "has_statement_timeout": false,
+        "validated_not_null_columns": [],
+        "statement_timeline": [
+          {
+            "index": 1,
+            "type": "BEGIN",
+            "in_transaction": true
+          },
+          {
+            "index": 2,
+            "statement": "CREATE INDEX idx_orders_customer_status ON orders (customer_id, status)",
+            "in_transaction": true,
+            "effective_lock_timeout": null,
+            "effective_statement_timeout": null
+          },
+          {
+            "index": 3,
+            "statement": "CREATE INDEX CONCURRENTLY idx_orders_concurrent_in_tx ON orders (created_at)",
+            "in_transaction": true,
+            "effective_lock_timeout": null,
+            "effective_statement_timeout": null
+          },
+          {
+            "index": 4,
+            "statement": "ALTER TABLE orders ALTER COLUMN total_cents TYPE BIGINT",
+            "in_transaction": true,
+            "effective_lock_timeout": null,
+            "effective_statement_timeout": null
+          },
+          {
+            "index": 5,
+            "statement": "ALTER TABLE orders ADD COLUMN audit_token TEXT DEFAULT gen_random_uuid()::text",
+            "in_transaction": true,
+            "effective_lock_timeout": null,
+            "effective_statement_timeout": null
+          },
+          {
+            "index": 6,
+            "statement": "ALTER TABLE orders ALTER COLUMN shipping_address SET NOT NULL",
+            "in_transaction": true,
+            "effective_lock_timeout": null,
+            "effective_statement_timeout": null
+          },
+          {
+            "index": 7,
+            "statement": "ALTER TABLE orders ADD CONSTRAINT fk_orders_merchant FOREIGN KEY (merchant_id) REFERENCES merchants (id)",
+            "in_transaction": true,
+            "effective_lock_timeout": null,
+            "effective_statement_timeout": null
+          },
+          {
+            "index": 8,
+            "statement": "ALTER TABLE orders DROP COLUMN legacy_coupon_code",
+            "in_transaction": true,
+            "effective_lock_timeout": null,
+            "effective_statement_timeout": null
+          },
+          {
+            "index": 9,
+            "type": "COMMIT",
+            "in_transaction": false
+          }
+        ]
+      },
+      "warnings": [],
+      "recommendations": [
+        "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL.",
+        "Rewrite as CREATE INDEX CONCURRENTLY outside of a transaction block.",
+        "Commit the preceding transaction (`COMMIT;`) before executing CONCURRENTLY statements, or move them to a non-transactional migration file.",
+        "Use expand-and-contract: add a new column, dual-write via trigger or application, backfill in small batches, and swap.",
+        "Add the column as nullable without a default, backfill in batched UPDATEs, create unique index CONCURRENTLY, and set DEFAULT.",
+        "Add `CHECK (shipping_address IS NOT NULL) NOT VALID`, run `VALIDATE CONSTRAINT` (`SHARE UPDATE EXCLUSIVE`), and then run `SET NOT NULL` on PostgreSQL 12+.",
+        "Append NOT VALID to ADD CONSTRAINT, then execute ALTER TABLE ... VALIDATE CONSTRAINT (`SHARE UPDATE EXCLUSIVE`) in a separate step.",
+        "Deploy application code removing all references to the column first, verify zero queries reference it, and drop in a subsequent release."
+      ],
+      "errors": []
+    },
+    "query_analysis": {
+      "status": "warning",
+      "timestamp": "2026-11-17T17:15:13.246366+00:00",
+      "platform": {
+        "system": "Linux",
+        "release": "6.12.105+"
+      },
+      "tool_versions": {
+        "python": "3.11.2"
+      },
+      "findings": [
+        {
+          "id": "SQL-FUNC-001",
+          "category": "sargability",
+          "severity": "high",
+          "classification": "verified",
+          "statement_index": 1,
+          "statement": "SELECT * FROM orders WHERE LOWER(customer_email) = 'alice@example.com' AND status = 'PAID' ORDER BY created_at DESC OFFSET 5000",
+          "title": "Non-SARGable function call `LOWER(customer_email)` in WHERE clause forces sequential scan unless expression index exists",
+          "evidence": {
+            "function": "LOWER",
+            "column": "customer_email"
+          },
+          "likely_causes": [
+            "Applying a function to a column prevents plain column B-Tree index lookups"
+          ],
+          "confidence": "high",
+          "recommendation": "Rewrite predicate as a range filter (for dates) or create an expression index on `(LOWER(customer_email))`."
+        },
+        {
+          "id": "SQL-OFFSET-001",
+          "category": "pagination",
+          "severity": "medium",
+          "classification": "verified",
+          "statement_index": 1,
+          "statement": "SELECT * FROM orders WHERE LOWER(customer_email) = 'alice@example.com' AND status = 'PAID' ORDER BY created_at DESC OFFSET 5000",
+          "title": "Deep OFFSET pagination (OFFSET 5000) scans and discards 5000 rows on every query",
+          "evidence": {
+            "offset": 5000
+          },
+          "likely_causes": [
+            "PostgreSQL must materialize and skip all preceding rows to satisfy OFFSET"
+          ],
+          "confidence": "high",
+          "recommendation": "Replace OFFSET pagination with keyset (seek) pagination: `WHERE (created_at, id) < ($1, $2) ORDER BY created_at DESC, id DESC LIMIT N`."
+        },
+        {
+          "id": "SQL-STAR-001",
+          "category": "projection",
+          "severity": "medium",
+          "classification": "heuristic",
+          "statement_index": 1,
+          "statement": "SELECT * FROM orders WHERE LOWER(customer_email) = 'alice@example.com' AND status = 'PAID' ORDER BY created_at DESC OFFSET 5000",
+          "title": "Unbounded SELECT * fetches wide rows (including TOAST columns) and prevents Index-Only Scans",
+          "evidence": {
+            "select_star": true,
+            "has_limit": false
+          },
+          "likely_causes": [
+            "Fetching all columns forces heap page fetches even when filter columns are covered by an index"
+          ],
+          "confidence": "medium",
+          "recommendation": "Project only required columns to enable Index-Only Scans and reduce network/TOAST I/O."
+        },
+        {
+          "id": "SQL-LIKE-002",
+          "category": "index_prevented",
+          "severity": "high",
+          "classification": "verified",
+          "statement_index": 2,
+          "statement": "SELECT id, total_cents FROM orders WHERE notes ILIKE '%urgent%' AND created_at >= '2026-01-01'",
+          "title": "Leading wildcard LIKE/ILIKE ('%pattern') prevents standard B-Tree index usage",
+          "evidence": {
+            "pattern": "LIKE '%...'"
+          },
+          "likely_causes": [
+            "B-Tree indexes are left-anchored and cannot seek on a leading wildcard"
+          ],
+          "confidence": "high",
+          "recommendation": "Enable pg_trgm extension and create a GIN trigram index: `CREATE INDEX CONCURRENTLY idx_trgm ON table USING gin (col gin_trgm_ops);`"
+        },
+        {
+          "id": "SQL-NOTIN-003",
+          "category": "join_efficiency",
+          "severity": "high",
+          "classification": "verified",
+          "statement_index": 3,
+          "statement": "SELECT id FROM customers WHERE id NOT IN (SELECT customer_id FROM orders)",
+          "title": "NOT IN (SELECT ...) uses hashed/materialized subplan and returns 0 rows if any NULL exists in subquery",
+          "evidence": {
+            "construct": "NOT IN (SELECT ...)"
+          },
+          "likely_causes": [
+            "SQL three-valued logic forces expensive NULL semantics checks in PostgreSQL"
+          ],
+          "confidence": "high",
+          "recommendation": "Rewrite `NOT IN (SELECT ...)` as `NOT EXISTS (SELECT 1 FROM ... WHERE ...)` for anti-join optimization and safe NULL semantics."
+        },
+        {
+          "id": "SQL-NPLUS1-001",
+          "category": "n_plus_one",
+          "severity": "high",
+          "classification": "verified",
+          "statement_index": 0,
+          "statement": "SELECT ID, STATUS FROM ORDERS WHERE CUSTOMER_ID = ?",
+          "title": "N+1 query pattern detected: identical query shape repeated 4 times in workload trace",
+          "evidence": {
+            "fingerprint": "SELECT ID, STATUS FROM ORDERS WHERE CUSTOMER_ID = ?",
+            "execution_count": 4
+          },
+          "likely_causes": [
+            "Application loop issuing per-entity SELECT queries instead of batched IN/ANY($1) or JOIN fetch"
+          ],
+          "confidence": "high",
+          "recommendation": "Batch lookups using `WHERE id = ANY($1::bigint[])` or eager-load via JOIN."
+        }
+      ],
+      "metrics": {
+        "query_count": 7,
+        "unique_query_shapes": 4,
+        "anti_pattern_count": 6
+      },
+      "warnings": [],
+      "recommendations": [
+        "Rewrite predicate as a range filter (for dates) or create an expression index on `(LOWER(customer_email))`.",
+        "Replace OFFSET pagination with keyset (seek) pagination: `WHERE (created_at, id) < ($1, $2) ORDER BY created_at DESC, id DESC LIMIT N`.",
+        "Project only required columns to enable Index-Only Scans and reduce network/TOAST I/O.",
+        "Enable pg_trgm extension and create a GIN trigram index: `CREATE INDEX CONCURRENTLY idx_trgm ON table USING gin (col gin_trgm_ops);`",
+        "Rewrite `NOT IN (SELECT ...)` as `NOT EXISTS (SELECT 1 FROM ... WHERE ...)` for anti-join optimization and safe NULL semantics.",
+        "Batch lookups using `WHERE id = ANY($1::bigint[])` or eager-load via JOIN."
+      ],
+      "errors": []
+    },
+    "index_advisor": [
+      {
+        "statement_index": 1,
+        "table": "orders",
+        "equality_columns": [
+          "status"
+        ],
+        "order_or_range_columns": [
+          "created_at"
+        ],
+        "recommended_ddl": "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_orders_status_created_at ON orders (status, created_at);",
+        "rationale": "Follows Equality -> Sort -> Range column ordering rule to maximize B-Tree selectivity and avoid in-memory/disk sorting."
+      },
+      {
+        "statement_index": 4,
+        "table": "orders",
+        "equality_columns": [
+          "customer_id"
+        ],
+        "order_or_range_columns": [],
+        "recommended_ddl": "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_orders_customer_id ON orders (customer_id);",
+        "rationale": "Follows Equality -> Sort -> Range column ordering rule to maximize B-Tree selectivity and avoid in-memory/disk sorting."
+      },
+      {
+        "statement_index": 5,
+        "table": "orders",
+        "equality_columns": [
+          "customer_id"
+        ],
+        "order_or_range_columns": [],
+        "recommended_ddl": "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_orders_customer_id ON orders (customer_id);",
+        "rationale": "Follows Equality -> Sort -> Range column ordering rule to maximize B-Tree selectivity and avoid in-memory/disk sorting."
+      },
+      {
+        "statement_index": 6,
+        "table": "orders",
+        "equality_columns": [
+          "customer_id"
+        ],
+        "order_or_range_columns": [],
+        "recommended_ddl": "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_orders_customer_id ON orders (customer_id);",
+        "rationale": "Follows Equality -> Sort -> Range column ordering rule to maximize B-Tree selectivity and avoid in-memory/disk sorting."
+      },
+      {
+        "statement_index": 7,
+        "table": "orders",
+        "equality_columns": [
+          "customer_id"
+        ],
+        "order_or_range_columns": [],
+        "recommended_ddl": "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_orders_customer_id ON orders (customer_id);",
+        "rationale": "Follows Equality -> Sort -> Range column ordering rule to maximize B-Tree selectivity and avoid in-memory/disk sorting."
+      }
+    ],
+    "explain_analysis": {
+      "status": "warning",
+      "timestamp": "2026-11-17T17:15:13.247295+00:00",
+      "platform": {
+        "system": "Linux",
+        "release": "6.12.105+"
+      },
+      "tool_versions": {
+        "python": "3.11.2"
+      },
+      "findings": [
+        {
+          "id": "PLAN-EST-001",
+          "category": "cardinality_misestimate",
+          "severity": "medium",
+          "classification": "verified",
+          "node_type": "Sort",
+          "relation": "unknown_relation",
+          "title": "Row estimation mismatch (59.2x) on `Sort` (unknown_relation): estimated 250 vs actual 14800",
+          "evidence": {
+            "estimated_rows": 250,
+            "actual_rows": 14800,
+            "ratio": 59.2
+          },
+          "likely_causes": [
+            "Stale table statistics in pg_statistic or correlated multi-column predicates without extended statistics"
+          ],
+          "confidence": "high",
+          "recommendation": "Run `ANALYZE unknown_relation;` and consider `CREATE STATISTICS` for correlated columns on `unknown_relation`."
+        },
+        {
+          "id": "PLAN-SPILL-001",
+          "category": "memory_spill",
+          "severity": "high",
+          "classification": "verified",
+          "node_type": "Sort",
+          "relation": "unknown_relation",
+          "title": "`Sort` spilled to disk (Sort Space Type=Disk, Temp Written Blocks=2048, Hash Batches=1)",
+          "evidence": {
+            "sort_method": "external merge",
+            "sort_space_type": "Disk",
+            "sort_space_used_kb": 16384,
+            "temp_written_blocks": 2048,
+            "hash_batches": 1
+          },
+          "likely_causes": [
+            "Operation memory exceeded session work_mem setting"
+          ],
+          "confidence": "high",
+          "recommendation": "Provide an index matching the ORDER BY clause to eliminate the sort, or raise session `work_mem` for heavy reporting/hash-join queries."
+        },
+        {
+          "id": "PLAN-SEQ-002",
+          "category": "sequential_scan",
+          "severity": "high",
+          "classification": "verified",
+          "node_type": "Seq Scan",
+          "relation": "orders",
+          "title": "Large Sequential Scan on `orders` (rows_removed=485200, actual_rows=14800, est_rows=250)",
+          "evidence": {
+            "relation": "orders",
+            "filter": "((status = 'PAID'::text) AND (customer_id = 42))",
+            "actual_rows": 14800,
+            "rows_removed_by_filter": 485200,
+            "selectivity_pct": 2.96,
+            "shared_read_blocks": 9850
+          },
+          "likely_causes": [
+            "Missing B-Tree or partial index on `orders` for filter `((status = 'PAID'::text) AND (customer_id = 42))`"
+          ],
+          "confidence": "high",
+          "recommendation": "Create a targeted index on `orders` covering columns in `((status = 'PAID'::text) AND (customer_id = 42))` using CREATE INDEX CONCURRENTLY."
+        },
+        {
+          "id": "PLAN-EST-002",
+          "category": "cardinality_misestimate",
+          "severity": "medium",
+          "classification": "verified",
+          "node_type": "Seq Scan",
+          "relation": "orders",
+          "title": "Row estimation mismatch (59.2x) on `Seq Scan` (orders): estimated 250 vs actual 14800",
+          "evidence": {
+            "estimated_rows": 250,
+            "actual_rows": 14800,
+            "ratio": 59.2
+          },
+          "likely_causes": [
+            "Stale table statistics in pg_statistic or correlated multi-column predicates without extended statistics"
+          ],
+          "confidence": "high",
+          "recommendation": "Run `ANALYZE orders;` and consider `CREATE STATISTICS` for correlated columns on `orders`."
+        }
+      ],
+      "metrics": {
+        "planning_time_ms": 1.45,
+        "execution_time_ms": 395.2,
+        "total_cost": 19120.75,
+        "node_count": 2,
+        "shared_hit_blocks": 840,
+        "shared_read_blocks": 19700,
+        "temp_written_blocks": 2048,
+        "buffer_cache_hit_pct": 4.09
+      },
+      "warnings": [],
+      "recommendations": [
+        "Run `ANALYZE unknown_relation;` and consider `CREATE STATISTICS` for correlated columns on `unknown_relation`.",
+        "Provide an index matching the ORDER BY clause to eliminate the sort, or raise session `work_mem` for heavy reporting/hash-join queries.",
+        "Create a targeted index on `orders` covering columns in `((status = 'PAID'::text) AND (customer_id = 42))` using CREATE INDEX CONCURRENTLY.",
+        "Run `ANALYZE orders;` and consider `CREATE STATISTICS` for correlated columns on `orders`."
+      ],
+      "errors": []
+    },
+    "schema_inspection": {
+      "status": "warning",
+      "timestamp": "2026-11-17T17:15:13.248444+00:00",
+      "platform": {
+        "system": "Linux",
+        "release": "6.12.105+"
+      },
+      "tool_versions": {
+        "python": "3.11.2"
+      },
+      "findings": [
+        {
+          "id": "SCH-INT4-MERCHANTS-ID",
+          "category": "type_safety",
+          "severity": "medium",
+          "classification": "heuristic",
+          "table": "merchants",
+          "title": "32-bit integer identifier `merchants.id` (SERIAL) risks 2.14B sequence exhaustion in high-growth tables",
+          "evidence": {
+            "table": "merchants",
+            "column": "id",
+            "type": "SERIAL"
+          },
+          "likely_causes": [
+            "Using 4-byte integer/serial instead of 8-byte BIGINT"
+          ],
+          "confidence": "medium",
+          "recommendation": "Prefer `BIGINT` (`BIGSERIAL` or `GENERATED ALWAYS AS IDENTITY`) for primary and foreign key columns."
+        },
+        {
+          "id": "SCH-FKIDX-ORDERS-MERCHANT_ID",
+          "category": "missing_fk_index",
+          "severity": "high",
+          "classification": "verified",
+          "table": "orders",
+          "title": "Unindexed foreign key `orders.merchant_id` causes sequential scans on parent DELETE/UPDATE and join queries",
+          "evidence": {
+            "table": "orders",
+            "foreign_key_column": "merchant_id"
+          },
+          "likely_causes": [
+            "PostgreSQL automatically indexes PRIMARY KEY and UNIQUE constraints, but never automatically indexes FOREIGN KEY columns"
+          ],
+          "confidence": "high",
+          "recommendation": "Run `CREATE INDEX CONCURRENTLY idx_orders_merchant_id ON orders (merchant_id);`"
+        },
+        {
+          "id": "SCH-INT4-ORDERS-ID",
+          "category": "type_safety",
+          "severity": "medium",
+          "classification": "heuristic",
+          "table": "orders",
+          "title": "32-bit integer identifier `orders.id` (INT) risks 2.14B sequence exhaustion in high-growth tables",
+          "evidence": {
+            "table": "orders",
+            "column": "id",
+            "type": "INT"
+          },
+          "likely_causes": [
+            "Using 4-byte integer/serial instead of 8-byte BIGINT"
+          ],
+          "confidence": "medium",
+          "recommendation": "Prefer `BIGINT` (`BIGSERIAL` or `GENERATED ALWAYS AS IDENTITY`) for primary and foreign key columns."
+        },
+        {
+          "id": "SCH-INT4-ORDERS-MERCHANT_ID",
+          "category": "type_safety",
+          "severity": "medium",
+          "classification": "heuristic",
+          "table": "orders",
+          "title": "32-bit integer identifier `orders.merchant_id` (INT) risks 2.14B sequence exhaustion in high-growth tables",
+          "evidence": {
+            "table": "orders",
+            "column": "merchant_id",
+            "type": "INT"
+          },
+          "likely_causes": [
+            "Using 4-byte integer/serial instead of 8-byte BIGINT"
+          ],
+          "confidence": "medium",
+          "recommendation": "Prefer `BIGINT` (`BIGSERIAL` or `GENERATED ALWAYS AS IDENTITY`) for primary and foreign key columns."
+        },
+        {
+          "id": "SCH-PK-AUDIT_EVENTS",
+          "category": "schema_integrity",
+          "severity": "high",
+          "classification": "verified",
+          "table": "audit_events",
+          "title": "Table `audit_events` has no PRIMARY KEY (breaks logical replication and bloat remediation tools like pg_repack)",
+          "evidence": {
+            "table": "audit_events",
+            "has_pk": false
+          },
+          "likely_causes": [
+            "Table created without an explicit PRIMARY KEY constraint"
+          ],
+          "confidence": "high",
+          "recommendation": "Add a BIGINT GENERATED ALWAYS AS IDENTITY or UUIDv7 primary key to `audit_events`."
+        }
+      ],
+      "metrics": {
+        "table_count": 3,
+        "index_count": 1,
+        "tables": {
+          "merchants": {
+            "has_pk": true,
+            "foreign_keys": [],
+            "columns": [
+              [
+                "id",
+                "SERIAL"
+              ],
+              [
+                "name",
+                "TEXT"
+              ]
+            ]
+          },
+          "orders": {
+            "has_pk": true,
+            "foreign_keys": [
+              "merchant_id"
+            ],
+            "columns": [
+              [
+                "id",
+                "INT"
+              ],
+              [
+                "customer_id",
+                "BIGINT"
+              ],
+              [
+                "merchant_id",
+                "INT"
+              ],
+              [
+                "status",
+                "TEXT"
+              ],
+              [
+                "total_cents",
+                "INT"
+              ],
+              [
+                "created_at",
+                "TIMESTAMPTZ"
+              ]
+            ]
+          },
+          "audit_events": {
+            "has_pk": false,
+            "foreign_keys": [],
+            "columns": [
+              [
+                "event_type",
+                "TEXT"
+              ],
+              [
+                "payload",
+                "JSONB"
+              ]
+            ]
+          }
+        },
+        "indexes": [
+          {
+            "name": "idx_orders_created_at",
+            "table": "orders",
+            "columns": [
+              "created_at"
+            ]
+          }
+        ],
+        "catalog_inspected": false
+      },
+      "warnings": [],
+      "recommendations": [
+        "Prefer `BIGINT` (`BIGSERIAL` or `GENERATED ALWAYS AS IDENTITY`) for primary and foreign key columns.",
+        "Run `CREATE INDEX CONCURRENTLY idx_orders_merchant_id ON orders (merchant_id);`",
+        "Add a BIGINT GENERATED ALWAYS AS IDENTITY or UUIDv7 primary key to `audit_events`."
+      ],
+      "errors": []
+    }
+  },
+  "warnings": [],
+  "recommendations": [
+    "Configure `SET lock_timeout = '2s';` (or `SET LOCAL lock_timeout = '2s';` inside the current transaction) BEFORE executing DDL.",
+    "Rewrite as CREATE INDEX CONCURRENTLY outside of a transaction block.",
+    "Commit the preceding transaction (`COMMIT;`) before executing CONCURRENTLY statements, or move them to a non-transactional migration file.",
+    "Use expand-and-contract: add a new column, dual-write via trigger or application, backfill in small batches, and swap.",
+    "Add the column as nullable without a default, backfill in batched UPDATEs, create unique index CONCURRENTLY, and set DEFAULT.",
+    "Add `CHECK (shipping_address IS NOT NULL) NOT VALID`, run `VALIDATE CONSTRAINT` (`SHARE UPDATE EXCLUSIVE`), and then run `SET NOT NULL` on PostgreSQL 12+.",
+    "Append NOT VALID to ADD CONSTRAINT, then execute ALTER TABLE ... VALIDATE CONSTRAINT (`SHARE UPDATE EXCLUSIVE`) in a separate step.",
+    "Deploy application code removing all references to the column first, verify zero queries reference it, and drop in a subsequent release.",
+    "Rewrite predicate as a range filter (for dates) or create an expression index on `(LOWER(customer_email))`.",
+    "Replace OFFSET pagination with keyset (seek) pagination: `WHERE (created_at, id) < ($1, $2) ORDER BY created_at DESC, id DESC LIMIT N`.",
+    "Project only required columns to enable Index-Only Scans and reduce network/TOAST I/O.",
+    "Enable pg_trgm extension and create a GIN trigram index: `CREATE INDEX CONCURRENTLY idx_trgm ON table USING gin (col gin_trgm_ops);`",
+    "Rewrite `NOT IN (SELECT ...)` as `NOT EXISTS (SELECT 1 FROM ... WHERE ...)` for anti-join optimization and safe NULL semantics.",
+    "Batch lookups using `WHERE id = ANY($1::bigint[])` or eager-load via JOIN.",
+    "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_orders_status_created_at ON orders (status, created_at);",
+    "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_orders_customer_id ON orders (customer_id);",
+    "Run `ANALYZE unknown_relation;` and consider `CREATE STATISTICS` for correlated columns on `unknown_relation`.",
+    "Provide an index matching the ORDER BY clause to eliminate the sort, or raise session `work_mem` for heavy reporting/hash-join queries.",
+    "Create a targeted index on `orders` covering columns in `((status = 'PAID'::text) AND (customer_id = 42))` using CREATE INDEX CONCURRENTLY.",
+    "Run `ANALYZE orders;` and consider `CREATE STATISTICS` for correlated columns on `orders`.",
+    "Prefer `BIGINT` (`BIGSERIAL` or `GENERATED ALWAYS AS IDENTITY`) for primary and foreign key columns.",
+    "Run `CREATE INDEX CONCURRENTLY idx_orders_merchant_id ON orders (merchant_id);`",
+    "Add a BIGINT GENERATED ALWAYS AS IDENTITY or UUIDv7 primary key to `audit_events`."
+  ],
+  "errors": []
+}

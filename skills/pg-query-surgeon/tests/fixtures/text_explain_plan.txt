@@ -1,0 +1,9 @@
+Sort  (cost=18420.50..19120.75 rows=250 width=128) (actual time=342.10..389.45 rows=14800 loops=1)
+  Sort Key: orders.created_at DESC
+  Sort Method: external merge  Disk: 16384kB
+  Buffers: shared hit=420 read=9850, temp written=2048
+  ->  Seq Scan on orders  (cost=0.00..15200.00 rows=250 width=128) (actual time=0.04..265.80 rows=14800 loops=1)
+        Filter: ((status = 'PAID'::text) AND (customer_id = 42))
+        Rows Removed by Filter: 485200
+Planning Time: 1.45 ms
+Execution Time: 395.20 ms

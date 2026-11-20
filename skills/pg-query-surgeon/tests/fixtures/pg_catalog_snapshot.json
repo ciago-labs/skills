@@ -1,0 +1,32 @@
+{
+  "pg_stat_user_tables": [
+    {
+      "relname": "orders",
+      "n_live_tup": 450000,
+      "n_dead_tup": 180000,
+      "seq_scan": 4200,
+      "idx_scan": 900
+    }
+  ],
+  "pg_index": [
+    {
+      "tablename": "orders",
+      "indexrelname": "idx_orders_failed_concurrent",
+      "indisvalid": false
+    }
+  ],
+  "pg_stat_activity": [
+    {
+      "pid": 8821,
+      "state": "idle in transaction",
+      "wait_event_type": "Client",
+      "duration_seconds": 185.4
+    },
+    {
+      "pid": 8845,
+      "state": "active",
+      "wait_event_type": "Lock",
+      "duration_seconds": 14.2
+    }
+  ]
+}

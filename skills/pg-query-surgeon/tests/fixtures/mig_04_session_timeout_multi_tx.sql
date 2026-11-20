@@ -1,0 +1,5 @@
+SET lock_timeout = '2s';
+BEGIN;
+ALTER TABLE users ADD COLUMN f1 TEXT;
+COMMIT;
+ALTER TABLE users ADD COLUMN f2 TEXT;

@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate Python syntax
+        run: python3 -m py_compile scripts/*.py tests/*.py
+
+      - name: Validate SKILL.md frontmatter and executable permissions
+        run: |
+          python3 -c '
+          from pathlib import Path
+          import os
+          text = Path("SKILL.md").read_text(encoding="utf-8")
+          assert text.startswith("---\\n"), "Missing YAML frontmatter"
+          parts = text.split("---", 2)
+          assert "name: pg-query-surgeon" in parts[1]
+          assert "description:" in parts[1]
+          for s in Path("scripts").iterdir():
+              assert os.access(s, os.X_OK), f"Not executable: {s}"
+          '
+
+      - name: Run unit test suite
+        run: python3 -m unittest discover -s tests -v

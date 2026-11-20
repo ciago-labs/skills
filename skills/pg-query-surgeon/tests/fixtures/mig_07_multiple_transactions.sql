@@ -1,0 +1,8 @@
+BEGIN;
+SET LOCAL lock_timeout = '2s';
+ALTER TABLE users ADD COLUMN a TEXT;
+COMMIT;
+BEGIN;
+SET LOCAL lock_timeout = '2s';
+ALTER TABLE users ADD COLUMN b TEXT;
+COMMIT;

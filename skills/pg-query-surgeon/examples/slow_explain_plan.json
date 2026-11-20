@@ -1,0 +1,49 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Sort",
+      "Parallel Aware": false,
+      "Startup Cost": 18420.5,
+      "Total Cost": 19120.75,
+      "Plan Rows": 250,
+      "Plan Width": 128,
+      "Actual Startup Time": 342.1,
+      "Actual Total Time": 389.45,
+      "Actual Rows": 14800,
+      "Actual Loops": 1,
+      "Sort Key": [
+        "orders.created_at DESC"
+      ],
+      "Sort Method": "external merge",
+      "Sort Space Used": 16384,
+      "Sort Space Type": "Disk",
+      "Shared Hit Blocks": 420,
+      "Shared Read Blocks": 9850,
+      "Temp Written Blocks": 2048,
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Relation Name": "orders",
+          "Alias": "orders",
+          "Startup Cost": 0.0,
+          "Total Cost": 15200.0,
+          "Plan Rows": 250,
+          "Plan Width": 128,
+          "Actual Startup Time": 0.04,
+          "Actual Total Time": 265.8,
+          "Actual Rows": 14800,
+          "Actual Loops": 1,
+          "Filter": "((status = 'PAID'::text) AND (customer_id = 42))",
+          "Rows Removed by Filter": 485200,
+          "Shared Hit Blocks": 420,
+          "Shared Read Blocks": 9850,
+          "Temp Written Blocks": 0
+        }
+      ]
+    },
+    "Planning Time": 1.45,
+    "Execution Time": 395.2
+  }
+]

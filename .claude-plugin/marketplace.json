@@ -1,0 +1,13 @@
+{
+  "name": "ciago-labs-skills",
+  "owner": { "name": "Ciago Labs" },
+  "plugins": [
+    {
+      "name": "ciago-labs-skills",
+      "description": "Collection of open-source agent skills",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/pg-query-surgeon"]
+    }
+  ]
+}

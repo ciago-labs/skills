@@ -1,0 +1,41 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate-skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate SKILL.md frontmatter
+        run: |
+          set -e
+          for d in skills/*/; do
+            dir_name=$(basename "$d")
+            f="${d}SKILL.md"
+            [ -f "$f" ] || { echo "::error::Missing $f"; exit 1; }
+            [ "$(head -n 1 "$f")" = "---" ] || { echo "::error::$f must start with ---"; exit 1; }
+            fm=$(sed -n '2,/^---$/p' "$f")
+            name=$(echo "$fm" | grep -m1 '^name:' | sed 's/^name:[[:space:]]*//')
+            echo "$fm" | grep -q '^description:' || { echo "::error::$f missing description"; exit 1; }
+            [ "$name" = "$dir_name" ] || { echo "::error::name '$name' != folder '$dir_name'"; exit 1; }
+            echo "OK: $dir_name"
+          done
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run skill tests
+        run: |
+          set -e
+          for d in skills/*/; do
+            if [ -d "${d}tests" ]; then
+              echo "Testing $d"
+              (cd "$d" && python3 -m unittest discover -s tests -v)
+            fi
+          done

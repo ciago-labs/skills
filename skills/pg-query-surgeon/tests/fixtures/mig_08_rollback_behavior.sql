@@ -1,0 +1,6 @@
+SET lock_timeout = '2s';
+BEGIN;
+ALTER TABLE orders ADD CONSTRAINT chk_nn CHECK (shipping_address IS NOT NULL) NOT VALID;
+ALTER TABLE orders VALIDATE CONSTRAINT chk_nn;
+ROLLBACK;
+ALTER TABLE orders ALTER COLUMN shipping_address SET NOT NULL;
