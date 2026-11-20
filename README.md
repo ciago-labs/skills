@@ -19,13 +19,23 @@ More engineering skills are in development and will be added to this collection.
 
 ## Installation
 
-### Install an individual skill
+Pick the route for your agent.
+
+### Hermes Agent
+
+```bash
+hermes skills install ciago-labs/skills/pg-query-surgeon
+```
+
+Hermes scans community skills and may report a **CAUTION** verdict for this one, because the skill contains a subprocess runner and a blocklist of privilege-escalation commands (`sudo`, `su`, ...) that its read-only guard rejects. Review the source, then add `--force` to install. See [SECURITY.md](skills/pg-query-surgeon/SECURITY.md) for what each finding refers to.
+
+### Cursor, Codex, Gemini CLI, OpenCode and other agents
 
 ```bash
 npx skills add ciago-labs/skills --skill pg-query-surgeon
 ```
 
-### Install through the Claude Code marketplace
+### Claude Code
 
 ```
 /plugin marketplace add ciago-labs/skills
@@ -35,11 +45,9 @@ npx skills add ciago-labs/skills --skill pg-query-surgeon
 
 ```bash
 git clone https://github.com/ciago-labs/skills.git
-mkdir -p ~/.claude/skills
-cp -r skills/skills/pg-query-surgeon ~/.claude/skills/
+cp -r skills/skills/pg-query-surgeon ~/.hermes/skills/    # Hermes
+# or: ~/.claude/skills/ (Claude Code), ~/.agents/skills/ (Codex and others)
 ```
-
-For OpenAI Codex, use `~/.agents/skills/` as the destination.
 
 ## Example prompts
 
