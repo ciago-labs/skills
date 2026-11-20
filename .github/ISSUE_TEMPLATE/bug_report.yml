@@ -1,0 +1,31 @@
+name: Bug report
+description: Something in a skill behaves incorrectly
+labels: ["type: bug"]
+body:
+  - type: input
+    id: skill
+    attributes:
+      label: Skill
+      description: Which skill is affected?
+      placeholder: pg-query-surgeon
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Commands or prompts, with any input files. Remove secrets and real credentials.
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: OS, Python version, agent (Claude Code, Codex, ...)
