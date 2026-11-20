@@ -1,33 +1,37 @@
-# Agent Skills
+# Ciago Labs — Agent Skills
 
-Open-source skills for AI coding agents (Claude Code, OpenAI Codex, Gemini CLI, OpenCode and other tools that support the [Agent Skills](https://agentskills.io/specification) format).
+**Production-focused skills for AI coding agents.**
 
-Each skill is a self-contained folder with a `SKILL.md`, deterministic scripts, tests, and references.
+Ciago Labs Skills is an open-source collection of modular, tested, and security-conscious engineering skills that help AI coding agents perform real-world development and infrastructure tasks more reliably.
 
-## Skills
+Each skill is independently organized within this monorepo, with its own instructions, deterministic scripts, tests, references, examples, and documentation.
 
-| Skill | What it does |
-|---|---|
-| [pg-query-surgeon](skills/pg-query-surgeon) | Finds lock hazards in PostgreSQL migrations, optimizes slow SQL and EXPLAIN ANALYZE plans, recommends indexes, and designs zero-downtime schema changes. |
-| [linux-perf-doctor](https://github.com/AnujTiwari-Student/linux-perf-doctor) | Read-only Linux performance diagnostics using /proc, /sys, PSI and cgroup telemetry. Lives in its own repo. |
+[Available Skills](#available-skills) · [Installation](#installation) · [Contributing](#contributing) · [Security](#security)
 
-More skills, MCP servers, and plugins are on the way.
+## Available Skills
 
-## Install
+| Skill | Description | Status |
+|---|---|---|
+| [pg-query-surgeon](skills/pg-query-surgeon) | Reviews PostgreSQL migrations for lock hazards, analyzes SQL and EXPLAIN ANALYZE plans, recommends indexes, and designs zero-downtime schema changes. | Available |
+| [linux-perf-doctor](https://github.com/AnujTiwari-Student/linux-perf-doctor) | Read-only Linux performance diagnostics using /proc, /sys, PSI, and cgroup telemetry. Maintained in its own repository. | Standalone |
 
-### Option 1: `npx skills`
+More engineering skills are in development and will be added to this collection.
+
+## Installation
+
+### Install an individual skill
 
 ```bash
 npx skills add ciago-labs/skills --skill pg-query-surgeon
 ```
 
-### Option 2: Claude Code plugin marketplace
+### Install through the Claude Code marketplace
 
 ```
 /plugin marketplace add ciago-labs/skills
 ```
 
-### Option 3: Manual
+### Manual installation
 
 ```bash
 git clone https://github.com/ciago-labs/skills.git
@@ -35,30 +39,46 @@ mkdir -p ~/.claude/skills
 cp -r skills/skills/pg-query-surgeon ~/.claude/skills/
 ```
 
-For OpenAI Codex, copy to `~/.agents/skills/` instead.
+For OpenAI Codex, use `~/.agents/skills/` as the destination.
 
 ## Example prompts
 
 - *"Use pg-query-surgeon to review this migration for lock hazards before I deploy."*
 - *"Here is an EXPLAIN ANALYZE output. Why is this query slow, and what index would fix it?"*
 
-## Repository layout
+## Design Principles
+
+- **Modular:** each skill is self-contained and independently organized.
+- **Verifiable:** skills include tests and deterministic supporting scripts where applicable.
+- **Security-conscious:** scripts minimize permissions, avoid unnecessary network access, and protect sensitive information.
+- **Transparent:** limitations, assumptions, and operational risks are documented.
+- **Agent-compatible:** designed for tools that support the Agent Skills format.
+
+## Repository Layout
 
 ```
-skills/            one folder per skill (SKILL.md + scripts, tests, references)
-plugins/           plugins (coming soon)
-.claude-plugin/    marketplace manifest
-.github/workflows/ CI: frontmatter validation and tests
+.
+├── .github/workflows/validate.yml   centralized CI for all skills
+├── .claude-plugin/marketplace.json  Claude Code marketplace manifest
+├── plugins/                         plugins (coming soon)
+├── skills/
+│   └── pg-query-surgeon/            SKILL.md, scripts, tests, references, docs
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── LICENSE
+└── README.md
 ```
+
+Centralized CI validates and tests every skill in this repository. Standalone projects stay independently maintained and are linked from the catalog.
 
 ## Contributing
 
-Issues and pull requests are welcome. Each skill folder has its own `CONTRIBUTING.md` with code style and test requirements. CI must pass before merging.
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. All changes must pass the repository's required validation checks.
 
 ## Security
 
-Skills can run scripts, so review any skill before installing it. Report vulnerabilities as described in each skill's `SECURITY.md`.
+Review a skill's source code and permissions before installing it. Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
-MIT. See [LICENSE](LICENSE). Individual skills may carry their own license file.
+Distributed under the MIT License. See [LICENSE](LICENSE). Check individual skill directories for any additional licensing terms.
