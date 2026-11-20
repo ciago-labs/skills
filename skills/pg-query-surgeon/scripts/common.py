@@ -5,16 +5,17 @@ import os
 import platform
 import re
 import selectors
+import shutil
 import signal
 import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 MAX_SUBPROCESS_OUTPUT_BYTES = 65536
 DEFAULT_SUBPROCESS_TIMEOUT_SEC = 5.0
-PRIVILEGE_ESCALATION_BINARIES = {"sudo", "su", "pkexec", "doas"}
+ALLOWED_EXECUTABLES = frozenset({"psql"})
 FORBIDDEN_MUTATING_SUBCOMMANDS = {
     "stop", "kill", "rm", "rmi", "prune", "build", "push", "restart", "pause", "unpause", "update"
 }
@@ -224,6 +225,7 @@ def run_bounded_command(
     grace_period_sec: float = 0.25,
     ready_file: Optional[Path] = None,
     startup_timeout_sec: float = 10.0,
+    allowed_executables: Optional[set] = None,
 ) -> Dict[str, Any]:
     """
     Execute an external command using streaming non-blocking I/O capture.
@@ -251,17 +253,18 @@ def run_bounded_command(
         }
 
     base_bin = os.path.basename(cmd[0])
-    if base_bin in PRIVILEGE_ESCALATION_BINARIES:
+    eff_allowlist = allowed_executables if allowed_executables is not None else ALLOWED_EXECUTABLES
+    if base_bin not in eff_allowlist:
         return {
             "ok": False,
             "returncode": -1,
             "stdout": "",
-            "stderr": f"Refused automatic privilege escalation command: {base_bin}",
+            "stderr": f"Refused non-allowlisted executable: {base_bin}",
             "truncated": False,
             "stdout_truncated": False,
             "stderr_truncated": False,
             "timed_out": False,
-            "terminated_reason": "blocked_privilege_escalation",
+            "terminated_reason": "blocked_executable",
             "child_pid": None,
         }
 
@@ -293,14 +296,33 @@ def run_bounded_command(
             "child_pid": None,
         }
 
+    resolved_exe = cmd[0] if os.path.isabs(cmd[0]) else shutil.which(cmd[0])
+    if not resolved_exe or not os.path.exists(resolved_exe):
+        return {
+            "ok": False,
+            "returncode": 127,
+            "stdout": "",
+            "stderr": f"Executable not found: {cmd[0]}",
+            "truncated": False,
+            "stdout_truncated": False,
+            "stderr_truncated": False,
+            "timed_out": False,
+            "terminated_reason": "executable_not_found",
+            "child_pid": None,
+        }
+
+    safe_cmd = [resolved_exe] + cmd[1:]
+    safe_env = env if env is not None else build_child_env()
+
     try:
         _enable_child_subreaper()
         proc = subprocess.Popen(
-            cmd,
+            safe_cmd,
+            stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             cwd=str(cwd) if cwd else None,
-            env=env,
+            env=safe_env,
             shell=False,
             start_new_session=True,
         )
@@ -779,18 +801,44 @@ def split_sql_statements(sql_text: str) -> List[str]:
     return statements
 
 
-_CHILD_ENV_ALLOWLIST = {
-    "PATH", "HOME", "USER", "LOGNAME", "LANG", "TZ", "TMPDIR", "TERM",
-    "SSL_CERT_FILE", "SSL_CERT_DIR", "KRB5CCNAME",
-}
+_CHILD_ENV_ALLOWLIST = (
+    "PATH",
+    "HOME",
+    "USER",
+    "LOGNAME",
+    "LANG",
+    "LC_ALL",
+    "LC_CTYPE",
+    "TZ",
+    "TMPDIR",
+    "TERM",
+    "SSL_CERT_FILE",
+    "SSL_CERT_DIR",
+    "KRB5CCNAME",
+    "PGHOST",
+    "PGPORT",
+    "PGUSER",
+    "PGDATABASE",
+    "PGSSLMODE",
+    "PGSSLROOTCERT",
+    "PGSSLCERT",
+    "PGSSLKEY",
+    "PGCONNECT_TIMEOUT",
+    "PGSERVICE",
+    "PGSERVICEFILE",
+    "PGPASSFILE",
+    "PGAPPNAME",
+    "PGOPTIONS",
+)
 
 
-def build_child_env() -> Dict[str, str]:
-    """Minimal environment for child processes: only what psql needs (PATH, locale, PG* settings), not the full parent environment."""
+def build_child_env(source_env: Optional[Mapping[str, str]] = None) -> Dict[str, str]:
+    """Build a minimal child-process environment by reading only explicitly allowlisted variable names."""
     env: Dict[str, str] = {}
-    for key, value in os.environ.items():
-        if key in _CHILD_ENV_ALLOWLIST or key.startswith("PG") or key.startswith("LC_"):
-            env[key] = value
+    for key in _CHILD_ENV_ALLOWLIST:
+        val = source_env.get(key) if source_env is not None else os.environ.get(key)
+        if val is not None:
+            env[key] = val
     return env
 
 
