@@ -16,3 +16,6 @@
 
 ## [1.0.3] - 2026-11-21
 - Reworded docs, examples and recommendation text and split detection-token literals so community install scans no longer flag them; runtime behavior unchanged.
+
+## [1.0.4] - 2026-11-21
+- Renamed `examples/.dockerignore.bad` to `examples/dockerignore.bad` so installers that skip dotfiles keep the fixture; updated references in SKILL.md, README.md, docs/BENCHMARKS.md and tests. Runtime behavior unchanged.

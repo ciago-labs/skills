@@ -4,7 +4,7 @@ description: Audit Docker images, layer history, container security posture, bri
 license: MIT
 compatibility: Linux and macOS with Python 3.8+ standard library. Works with offline JSON/Dockerfile fixtures or optional read-only Docker CLI inspection.
 metadata:
-  version: "1.0.3"
+  version: "1.0.4"
   category: container-engineering
 ---
 
