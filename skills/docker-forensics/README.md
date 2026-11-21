@@ -20,11 +20,20 @@ Containerized applications frequently ship with gigabyte-sized build toolchains,
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## 6. Installation
-Install via the Agent Skills CLI or download the release ZIP and extract `docker-forensics/` into your agent's skills directory (see [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md) for per-agent paths):
+
+Hermes Agent:
+
+```bash
+hermes skills install ciago-labs/skills/docker-forensics
+```
+
+Cursor, Codex, Gemini CLI, OpenCode and other agents:
 
 ```bash
 npx skills add ciago-labs/skills --skill docker-forensics
 ```
+
+The npx route runs no local security scan: review the source before use. For Claude Code and manual installation, see the [repository README](https://github.com/ciago-labs/skills#installation). See [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md) for per-agent paths.
 
 ## 7. Supported Agent Environments
 See [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md).
