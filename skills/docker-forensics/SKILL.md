@@ -55,7 +55,7 @@ python3 scripts/inspect_docker.py --inspect-file examples/container_inspect.json
 ### Step 2: Analyze Dockerfile, `.dockerignore`, and Image Layers
 
 ```bash
-python3 scripts/analyze_image.py --dockerfile examples/Dockerfile.bloated-python --dockerignore examples/.dockerignore.bad --pretty
+python3 scripts/analyze_image.py --dockerfile examples/Dockerfile.bloated-python --dockerignore examples/dockerignore.bad --pretty
 python3 scripts/analyze_layers.py --layers-file examples/image_history.json --pretty
 ```
 
@@ -78,7 +78,7 @@ python3 scripts/diagnose_crashes.py --inspect-file examples/container_inspect.js
 python3 scripts/generate_forensics_report.py \
   --inspect-file examples/container_inspect.json \
   --dockerfile examples/Dockerfile.bloated-python \
-  --dockerignore examples/.dockerignore.bad \
+  --dockerignore examples/dockerignore.bad \
   --layers-file examples/image_history.json \
   --network-file examples/bridge_network.json \
   --k8s-pod-file examples/k8s_crashloop_pod.json \

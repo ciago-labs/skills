@@ -40,12 +40,12 @@ See [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md).
 ## 10. Script Examples
 ```bash
 python3 scripts/inspect_docker.py --inspect-file examples/container_inspect.json --pretty
-python3 scripts/analyze_image.py --dockerfile examples/Dockerfile.bloated-python --dockerignore examples/.dockerignore.bad --pretty
+python3 scripts/analyze_image.py --dockerfile examples/Dockerfile.bloated-python --dockerignore examples/dockerignore.bad --pretty
 python3 scripts/analyze_layers.py --layers-file examples/image_history.json --pretty
 python3 scripts/audit_container_security.py --inspect-file examples/container_inspect.json --dockerfile examples/Dockerfile.bloated-python --pretty
 python3 scripts/inspect_network.py --inspect-file examples/container_inspect.json --network-file examples/bridge_network.json --pretty
 python3 scripts/diagnose_crashes.py --inspect-file examples/container_inspect.json --k8s-pod-file examples/k8s_crashloop_pod.json --pretty
-python3 scripts/generate_forensics_report.py --inspect-file examples/container_inspect.json --dockerfile examples/Dockerfile.bloated-python --dockerignore examples/.dockerignore.bad --layers-file examples/image_history.json --network-file examples/bridge_network.json --k8s-pod-file examples/k8s_crashloop_pod.json --format markdown --output examples/sample-forensics-report.md
+python3 scripts/generate_forensics_report.py --inspect-file examples/container_inspect.json --dockerfile examples/Dockerfile.bloated-python --dockerignore examples/dockerignore.bad --layers-file examples/image_history.json --network-file examples/bridge_network.json --k8s-pod-file examples/k8s_crashloop_pod.json --format markdown --output examples/sample-forensics-report.md
 ```
 
 ## 11. Example Diagnostic Results

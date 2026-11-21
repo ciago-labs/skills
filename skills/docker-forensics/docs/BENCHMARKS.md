@@ -6,7 +6,7 @@ Runs deterministically without requiring a running Docker daemon:
 python3 scripts/generate_forensics_report.py \\
   --inspect-file examples/container_inspect.json \\
   --dockerfile examples/Dockerfile.bloated-python \\
-  --dockerignore examples/.dockerignore.bad \\
+  --dockerignore examples/dockerignore.bad \\
   --layers-file examples/image_history.json \\
   --network-file examples/bridge_network.json \\
   --k8s-pod-file examples/k8s_crashloop_pod.json \\
@@ -17,6 +17,6 @@ python3 scripts/generate_forensics_report.py \\
 ## Recording Terminal Demonstrations
 ```bash
 asciinema rec -i 1.5 demo-docker-forensics.cast
-python3 scripts/generate_forensics_report.py --inspect-file examples/container_inspect.json --dockerfile examples/Dockerfile.bloated-python --dockerignore examples/.dockerignore.bad --layers-file examples/image_history.json --network-file examples/bridge_network.json --k8s-pod-file examples/k8s_crashloop_pod.json --format markdown
+python3 scripts/generate_forensics_report.py --inspect-file examples/container_inspect.json --dockerfile examples/Dockerfile.bloated-python --dockerignore examples/dockerignore.bad --layers-file examples/image_history.json --network-file examples/bridge_network.json --k8s-pod-file examples/k8s_crashloop_pod.json --format markdown
 exit
 ```
