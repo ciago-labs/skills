@@ -13,27 +13,31 @@ Each skill is independently organized within this monorepo, with its own instruc
 | Skill | Description | Status |
 |---|---|---|
 | [pg-query-surgeon](skills/pg-query-surgeon) | Reviews PostgreSQL migrations for lock hazards, analyzes SQL and EXPLAIN ANALYZE plans, recommends indexes, and designs zero-downtime schema changes. | Available |
+| [docker-forensics](skills/docker-forensics) | Read-only audit of Docker images, layer history, container security posture, bridge/DNS networking, and container crash loops (OOM, SIGSEGV, CrashLoopBackOff) for Go, Rust, Node.js, and Python workloads. | Available |
 | [linux-perf-doctor](https://github.com/AnujTiwari-Student/linux-perf-doctor) | Read-only Linux performance diagnostics using /proc, /sys, PSI, and cgroup telemetry. Maintained in its own repository. | Standalone |
 
 More engineering skills are in development and will be added to this collection.
 
 ## Installation
 
-Pick the route for your agent.
+Replace `<skill>` with a skill name from the [catalog](#available-skills), for example `pg-query-surgeon` or `docker-forensics`. `linux-perf-doctor` is a standalone repository: follow its own README.
 
 ### Hermes Agent
 
 ```bash
-hermes skills install ciago-labs/skills/pg-query-surgeon
+hermes skills inspect ciago-labs/skills/<skill>   # preview only; the scan runs at install
+hermes skills install ciago-labs/skills/<skill>
 ```
 
-Hermes scans community skills before installing them. This skill runs one bounded child-process helper (strict executable allowlist, minimal environment, no shell) and reads a small allowlist of environment variables. Review [SECURITY.md](skills/pg-query-surgeon/SECURITY.md) for each control, and inspect the scan result with `hermes skills inspect ciago-labs/skills/pg-query-surgeon` before installing. Do not override the scanner.
+Hermes scans community skills before installing them and blocks CAUTION and DANGEROUS verdicts. Do not override the scanner. Each skill documents its controls in its own `SECURITY.md` (`skills/<skill>/SECURITY.md`).
 
 ### Cursor, Codex, Gemini CLI, OpenCode and other agents
 
 ```bash
-npx skills add ciago-labs/skills --skill pg-query-surgeon
+npx skills add ciago-labs/skills --skill <skill>
 ```
+
+This route does not run a local security scan. Review the skill's source and `SECURITY.md` before use.
 
 ### Claude Code
 
@@ -45,7 +49,8 @@ npx skills add ciago-labs/skills --skill pg-query-surgeon
 
 ```bash
 git clone https://github.com/ciago-labs/skills.git
-cp -r skills/skills/pg-query-surgeon ~/.hermes/skills/    # Hermes
+SKILL=<skill>
+cp -r "skills/skills/$SKILL" ~/.hermes/skills/    # Hermes
 # or: ~/.claude/skills/ (Claude Code), ~/.agents/skills/ (Codex and others)
 ```
 
@@ -53,6 +58,7 @@ cp -r skills/skills/pg-query-surgeon ~/.hermes/skills/    # Hermes
 
 - *"Use pg-query-surgeon to review this migration for lock hazards before I deploy."*
 - *"Here is an EXPLAIN ANALYZE output. Why is this query slow, and what index would fix it?"*
+- *"Use docker-forensics to find out why this container keeps exiting with code 137."*
 
 ## Design Principles
 
@@ -70,7 +76,8 @@ cp -r skills/skills/pg-query-surgeon ~/.hermes/skills/    # Hermes
 ├── .claude-plugin/marketplace.json  Claude Code marketplace manifest
 ├── plugins/                         plugins (coming soon)
 ├── skills/
-│   └── pg-query-surgeon/            SKILL.md, scripts, tests, references, docs
+│   ├── pg-query-surgeon/            SKILL.md, scripts, tests, references, docs
+│   └── docker-forensics/            SKILL.md, scripts, tests, references, docs
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── LICENSE
