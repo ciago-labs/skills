@@ -1,0 +1,22 @@
+[
+  {
+    "Id": "444455556666",
+    "Name": "/native-ffi-service",
+    "RestartCount": 4,
+    "State": {
+      "Status": "exited",
+      "Running": false,
+      "OOMKilled": false,
+      "ExitCode": 139,
+      "Error": ""
+    },
+    "Config": {
+      "Image": "native-ffi:v1",
+      "User": "10001",
+      "Env": []
+    },
+    "HostConfig": {
+      "Memory": 536870912
+    }
+  }
+]

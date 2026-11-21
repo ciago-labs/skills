@@ -1,0 +1,22 @@
+[
+  {
+    "Id": "111122223333",
+    "Name": "/worker-sigkill",
+    "RestartCount": 1,
+    "State": {
+      "Status": "exited",
+      "Running": false,
+      "OOMKilled": false,
+      "ExitCode": 137,
+      "Error": ""
+    },
+    "Config": {
+      "Image": "worker:v1",
+      "User": "10001",
+      "Env": []
+    },
+    "HostConfig": {
+      "Memory": 536870912
+    }
+  }
+]

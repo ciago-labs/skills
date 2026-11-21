@@ -1,0 +1,27 @@
+{
+  "kind": "Pod",
+  "metadata": {
+    "name": "payment-processor-7d8f9c-abcde"
+  },
+  "status": {
+    "phase": "Running",
+    "containerStatuses": [
+      {
+        "name": "payment-processor",
+        "restartCount": 7,
+        "state": {
+          "waiting": {
+            "reason": "CrashLoopBackOff",
+            "message": "back-off 5m0s restarting failed container"
+          }
+        },
+        "lastState": {
+          "terminated": {
+            "exitCode": 137,
+            "reason": "OOMKilled"
+          }
+        }
+      }
+    ]
+  }
+}
