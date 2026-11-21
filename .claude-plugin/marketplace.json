@@ -7,7 +7,10 @@
       "description": "Collection of open-source agent skills",
       "source": "./",
       "strict": false,
-      "skills": ["./skills/pg-query-surgeon"]
+      "skills": [
+        "./skills/pg-query-surgeon",
+        "./skills/docker-forensics"
+      ]
     }
   ]
 }
