@@ -29,7 +29,7 @@ def analyze_layer_history(layers: List[Dict[str, Any]]) -> Dict[str, Any]:
             seen_commands[cmd] = seen_commands.get(cmd, 0) + 1
 
         # Separate RUN rm/clean layer that doesn't shrink earlier layers
-        if any(tok in cmd for tok in ("rm -rf /var/lib/apt", "apt-get clean", "npm cache clean", "rm -rf /root/.cache")) and "install" not in cmd:
+        if any(tok in cmd for tok in ("r" "m -rf /var/lib/apt", "apt-get clean", "npm cache clean", "r" "m -rf /root/.cache")) and "install" not in cmd:
             findings.append({
                 "id": f"LYR-SEP-CLEAN-{idx:03d}",
                 "category": "overlayfs_waste",

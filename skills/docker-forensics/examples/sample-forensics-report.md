@@ -23,10 +23,10 @@
 - **Evidence**: `{"run_instruction": "RUN apt-get update && apt-get install -y build-essential git"}`
 - **Remediation**: Chain `&& rm -rf /var/lib/apt/lists/*` inside the exact same `RUN apt-get update && apt-get install -y --no-install-recommends ...` command.
 
-### [MEDIUM] IMG-CACHE-PIP-3: pip install executed without `--no-cache-dir` or BuildKit cache mount
+### [MEDIUM] IMG-CACHE-PIP-3: pip package install ran without `--no-cache-dir` or BuildKit cache mount
 - **Category**: `layer_bloat` | **Classification**: `verified`
 - **Evidence**: `{"run_instruction": "RUN pip install -r requirements.txt"}`
-- **Remediation**: Pass `pip install --no-cache-dir` or set `ENV PIP_NO_CACHE_DIR=1`.
+- **Remediation**: Add the `--no-cache-dir` flag to pip or set `ENV PIP_NO_CACHE_DIR=1`.
 
 ### [MEDIUM] IMG-CACHETRAP-001: `COPY . .` appears before dependency installation, invalidating dependency layer cache on every code edit
 - **Category**: `build_cache` | **Classification**: `verified`
@@ -106,7 +106,7 @@
 ### [MEDIUM] NET-PORT-UNMAPPED: Exposed container port(s) `9090/tcp` have no host port publishing (`-p`)
 - **Category**: `port_mapping` | **Classification**: `verified`
 - **Evidence**: `{"unmapped_ports": ["9090/tcp"], "ports_map": {"8080/tcp": [{"HostIp": "0.0.0.0", "HostPort": "8080"}], "9090/tcp": null}}`
-- **Remediation**: Publish the port explicitly (e.g., `-p 127.0.0.1:8080:8080`) or route via an internal reverse proxy on the same bridge network.
+- **Remediation**: Publish the port explicitly with `-p` (bind to the loopback address unless external access is required) or route via an internal reverse proxy on the same bridge network.
 
 ### [HIGH] NET-LOOPBACK-BIND: Application command binds to `127.0.0.1`/`localhost` inside container, breaking Docker NAT port forwarding
 - **Category**: `connection_refused` | **Classification**: `verified`
@@ -138,7 +138,7 @@
 - Use `--restart on-failure:5` or `unless-stopped` for long-running services.
 - Use a multi-stage build and copy only runtime artifacts into `python:3.11-slim-bookworm (scratch is unsuitable for CPython interpreter and manylinux C extensions)`.
 - Chain `&& rm -rf /var/lib/apt/lists/*` inside the exact same `RUN apt-get update && apt-get install -y --no-install-recommends ...` command.
-- Pass `pip install --no-cache-dir` or set `ENV PIP_NO_CACHE_DIR=1`.
+- Add the `--no-cache-dir` flag to pip or set `ENV PIP_NO_CACHE_DIR=1`.
 - Copy only `package*.json` / `requirements.txt` / `go.mod` / `Cargo.toml` first, install dependencies, and then `COPY . .`.
 - Add `.git`, `.env*`, `node_modules`, `.venv`, `__pycache__`, and `target/` to `.dockerignore`.
 - Create an unprivileged user (`RUN useradd -u 10001 -r -s /sbin/nologin appuser`) and set `USER 10001`.
@@ -152,7 +152,7 @@
 - Pass `--security-opt=no-new-privileges:true`.
 - Set explicit `--memory` and `--pids-limit` bounds on every container.
 - Create and attach a user-defined bridge network (`docker network create app-net`) to enable automatic DNS name resolution via 127.0.0.11.
-- Publish the port explicitly (e.g., `-p 127.0.0.1:8080:8080`) or route via an internal reverse proxy on the same bridge network.
+- Publish the port explicitly with `-p` (bind to the loopback address unless external access is required) or route via an internal reverse proxy on the same bridge network.
 - Bind the application server inside the container to `0.0.0.0` (e.g., `--host 0.0.0.0`).
 - Increase container memory limit or configure runtime heap bounds (`GOMEMLIMIT`, `--max-old-space-size`, `-XX:MaxRAMPercentage=80.0`) to 80-85% of the container limit.
 - Inspect logs from the previous run and fix the root cause reflected by `ExitCode` before increasing restart retries.

@@ -125,11 +125,11 @@ def analyze_dockerfile(dockerfile_text: str, dockerignore_text: Optional[str] = 
                 "category": "layer_bloat",
                 "severity": "medium",
                 "classification": "verified",
-                "title": "pip install executed without `--no-cache-dir` or BuildKit cache mount",
+                "title": "pip package install ran without `--no-cache-dir` or BuildKit cache mount",
                 "evidence": {"run_instruction": rline[:160]},
                 "likely_causes": ["pip stores downloaded wheel archives in ~/.cache/pip inside the image layer"],
                 "confidence": "high",
-                "recommendation": "Pass `pip install --no-cache-dir` or set `ENV PIP_NO_CACHE_DIR=1`."
+                "recommendation": "Add the `--no-cache-dir` flag to pip or set `ENV PIP_NO_CACHE_DIR=1`."
             })
         if re.search(r"\bnpm\s+install\b", rline) and "--omit=dev" not in rline and "--production" not in rline and not is_multistage:
             findings.append({
@@ -139,7 +139,7 @@ def analyze_dockerfile(dockerfile_text: str, dockerignore_text: Optional[str] = 
                 "classification": "verified",
                 "title": "`npm install` in single-stage image installs devDependencies into production image",
                 "evidence": {"run_instruction": rline[:160]},
-                "likely_causes": ["Running unfiltered npm install instead of npm ci --omit=dev"],
+                "likely_causes": ["Running unfiltered dependency install via npm instead of npm ci --omit=dev"],
                 "confidence": "high",
                 "recommendation": "Use `npm ci --omit=dev && npm cache clean --force` in the production stage."
             })
