@@ -47,7 +47,7 @@ class TestDockerForensics(unittest.TestCase):
 
     def test_analyze_image_python_go_rust_nodejs_ecosystems(self):
         df_py = (EXAMPLES_DIR / "Dockerfile.bloated-python").read_text(encoding="utf-8")
-        di = (EXAMPLES_DIR / ".dockerignore.bad").read_text(encoding="utf-8")
+        di = (EXAMPLES_DIR / "dockerignore.bad").read_text(encoding="utf-8")
         res_py = analyze_image.analyze_dockerfile(df_py, di)
         self.assertValidSchema(res_py)
         self.assertEqual(res_py["metrics"]["ecosystem"], "python")
@@ -154,7 +154,7 @@ class TestDockerForensics(unittest.TestCase):
         rep = generate_forensics_report.build_forensics_report(
             EXAMPLES_DIR / "container_inspect.json",
             EXAMPLES_DIR / "Dockerfile.bloated-python",
-            EXAMPLES_DIR / ".dockerignore.bad",
+            EXAMPLES_DIR / "dockerignore.bad",
             EXAMPLES_DIR / "image_history.json",
             EXAMPLES_DIR / "bridge_network.json",
             EXAMPLES_DIR / "k8s_crashloop_pod.json",
