@@ -1,0 +1,18 @@
+# Cross-Harness & CLI Compatibility (`docker-forensics`)
+
+This repository conforms to the open [Agent Skills Specification](https://agentskills.io/specification) ([Agent Skills Overview](https://agentskills.io/home)).
+
+> **Important Distinction**: `npx skills` ([vercel-labs/skills](https://github.com/vercel-labs/skills)) is a **skill installation and distribution CLI utility**, not an AI-agent runtime harness. It copies or links `SKILL.md` directories into the target workspace or user skill path of an AI coding agent.
+
+## Compatibility Classification Matrix
+
+| Target / Tool | Role | Classification | Documented Skill Path & Installation Procedure | Verification Evidence |
+| :--- | :--- | :--- | :--- | :--- |
+| **Agent Skills Specification (`SKILL.md`)** | Open Format Standard | **Verified** | Root `SKILL.md` + `scripts/` + `references/` + `schemas/` | Automated schema, frontmatter, and path tests in `tests/test_docker_forensics.py`. |
+| **Vercel `npx skills` CLI** | Skill Installation / Distribution Utility (Not an Agent Runtime) | **Documented but not independently tested** | `npx skills add <owner>/docker-forensics` | Package layout matches [vercel-labs/skills](https://github.com/vercel-labs/skills) conventions. |
+| **Claude Code** | AI Coding Agent Runtime | **Documented but not independently tested** | `mkdir -p ~/.claude/skills && cp -r ./docker-forensics ~/.claude/skills/docker-forensics` (or project `.claude/skills/docker-forensics`) | Follows `.claude/skills/<name>/SKILL.md` discovery ([agentskills.io](https://agentskills.io/home)). |
+| **OpenAI Codex CLI / Cloud** | AI Coding Agent Runtime | **Documented but not independently tested** | `mkdir -p ~/.agents/skills && cp -r ./docker-forensics ~/.agents/skills/docker-forensics` (or workspace `.agents/skills/docker-forensics`) | Follows `~/.agents/skills/<name>/SKILL.md` per [OpenAI Build Skills Docs](https://learn.chatgpt.com/docs/build-skills). |
+| **Gemini CLI** | AI Coding Agent Runtime | **Documented but not independently tested** | `mkdir -p .gemini/skills && cp -r ./docker-forensics .gemini/skills/docker-forensics` | Matches Gemini CLI `SKILL.md` layout ([google-labs-code/stitch-skills](https://github.com/google-labs-code/stitch-skills)). |
+| **Google Antigravity** | AI Coding Agent Runtime | **Documented but not independently tested** | Default workspace path: `mkdir -p .agents/skills && cp -r ./docker-forensics .agents/skills/docker-forensics` (Global: `~/.gemini/config/skills/docker-forensics`; backward-compatible legacy path: `.agent/skills/docker-forensics`) | Per official [Google Antigravity Agent Skills Docs](https://antigravity.google/docs/skills/), `.agents/skills/` is the default workspace directory while `.agent/skills/` is retained for backward compatibility. |
+| **OpenCode** | AI Coding Agent Runtime | **Documented but not independently tested** | `mkdir -p ~/.config/opencode/skills && cp -r ./docker-forensics ~/.config/opencode/skills/docker-forensics` | Compatible with OpenCode `SKILL.md` loader ([vercel-labs/skills](https://github.com/vercel-labs/skills)). |
+| **Hermes Agent** | AI Agent Runtime | **Documented but not independently tested** | Manual local installation into Hermes's primary skills directory: `mkdir -p ~/.hermes/skills && cp -r ./docker-forensics ~/.hermes/skills/docker-forensics` (also supports shared `.agents/skills/docker-forensics`) | Per [Hermes Agent Official Skills Documentation](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills) and [Working with Skills Guide](https://hermes-agent.nousresearch.com/docs/guides/work-with-skills), local custom skills are installed by copying the skill directory into `~/.hermes/skills/<skill-name>/`. |

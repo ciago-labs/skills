@@ -1,0 +1,22 @@
+[
+  {
+    "Id": "sha256:aaa1",
+    "CreatedBy": "FROM python:3.11",
+    "Size": 1012000000
+  },
+  {
+    "Id": "sha256:aaa2",
+    "CreatedBy": "/bin/sh -c apt-get update && apt-get install -y build-essential git",
+    "Size": 245000000
+  },
+  {
+    "Id": "sha256:aaa3",
+    "CreatedBy": "/bin/sh -c rm -rf /var/lib/apt/lists/*",
+    "Size": 0
+  },
+  {
+    "Id": "sha256:aaa4",
+    "CreatedBy": "/bin/sh -c pip install -r requirements.txt",
+    "Size": 180000000
+  }
+]

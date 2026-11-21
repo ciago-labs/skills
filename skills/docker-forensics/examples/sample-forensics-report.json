@@ -1,0 +1,585 @@
+{
+  "status": "critical",
+  "timestamp": "2026-11-21T05:07:00.355884+00:00",
+  "platform": {
+    "system": "Linux",
+    "release": "6.12.105+"
+  },
+  "tool_versions": {
+    "python": "3.11.2"
+  },
+  "findings": [
+    {
+      "id": "DKR-CFG-002",
+      "category": "resilience",
+      "severity": "low",
+      "classification": "verified",
+      "title": "Container restart policy is set to 'no'",
+      "evidence": {
+        "restart_policy": {
+          "Name": "no",
+          "MaximumRetryCount": 0
+        }
+      },
+      "likely_causes": [
+        "Container launched without --restart unless-stopped or on-failure"
+      ],
+      "confidence": "high",
+      "recommendation": "Use `--restart on-failure:5` or `unless-stopped` for long-running services."
+    },
+    {
+      "id": "IMG-STAGE-001",
+      "category": "multi_stage",
+      "severity": "high",
+      "classification": "verified",
+      "title": "Single-stage build using full SDK/OS base image `python:3.11` ships compilers and build toolchains to production",
+      "evidence": {
+        "from_stages": 1,
+        "final_base_image": "python:3.11",
+        "ecosystem": "python",
+        "recommended_runtime_base": "python:3.11-slim-bookworm (scratch is unsuitable for CPython interpreter and manylinux C extensions)"
+      },
+      "likely_causes": [
+        "No multi-stage separation between build environment and runtime image"
+      ],
+      "confidence": "high",
+      "recommendation": "Use a multi-stage build and copy only runtime artifacts into `python:3.11-slim-bookworm (scratch is unsuitable for CPython interpreter and manylinux C extensions)`."
+    },
+    {
+      "id": "IMG-CACHE-APT-1",
+      "category": "layer_bloat",
+      "severity": "medium",
+      "classification": "verified",
+      "title": "apt-get install without cleaning `/var/lib/apt/lists/*` in the same RUN instruction",
+      "evidence": {
+        "run_instruction": "RUN apt-get update && apt-get install -y build-essential git"
+      },
+      "likely_causes": [
+        "Apt package lists remain permanently committed in the lower overlayfs layer"
+      ],
+      "confidence": "high",
+      "recommendation": "Chain `&& rm -rf /var/lib/apt/lists/*` inside the exact same `RUN apt-get update && apt-get install -y --no-install-recommends ...` command."
+    },
+    {
+      "id": "IMG-CACHE-PIP-3",
+      "category": "layer_bloat",
+      "severity": "medium",
+      "classification": "verified",
+      "title": "pip install executed without `--no-cache-dir` or BuildKit cache mount",
+      "evidence": {
+        "run_instruction": "RUN pip install -r requirements.txt"
+      },
+      "likely_causes": [
+        "pip stores downloaded wheel archives in ~/.cache/pip inside the image layer"
+      ],
+      "confidence": "high",
+      "recommendation": "Pass `pip install --no-cache-dir` or set `ENV PIP_NO_CACHE_DIR=1`."
+    },
+    {
+      "id": "IMG-CACHETRAP-001",
+      "category": "build_cache",
+      "severity": "medium",
+      "classification": "verified",
+      "title": "`COPY . .` appears before dependency installation, invalidating dependency layer cache on every code edit",
+      "evidence": {
+        "copy_all_line_index": 2,
+        "dep_install_line_index": 5
+      },
+      "likely_causes": [
+        "Copying full source tree before lockfiles/manifests"
+      ],
+      "confidence": "high",
+      "recommendation": "Copy only `package*.json` / `requirements.txt` / `go.mod` / `Cargo.toml` first, install dependencies, and then `COPY . .`."
+    },
+    {
+      "id": "IMG-IGNORE-001",
+      "category": "dockerignore",
+      "severity": "high",
+      "classification": "verified",
+      "title": "`.dockerignore` is missing critical exclusions: .git, .env, node_modules, __pycache__, .venv",
+      "evidence": {
+        "missing_entries": [
+          ".git",
+          ".env",
+          "node_modules",
+          "__pycache__",
+          ".venv"
+        ]
+      },
+      "likely_causes": [
+        "Incomplete .dockerignore risks leaking .env secrets or .git history into COPY . . layers"
+      ],
+      "confidence": "high",
+      "recommendation": "Add `.git`, `.env*`, `node_modules`, `.venv`, `__pycache__`, and `target/` to `.dockerignore`."
+    },
+    {
+      "id": "IMG-USER-001",
+      "category": "security",
+      "severity": "medium",
+      "classification": "verified",
+      "title": "Dockerfile does not switch to a non-root USER in the final stage",
+      "evidence": {
+        "user_instructions": []
+      },
+      "likely_causes": [
+        "Container processes run as UID 0 by default unless USER is specified"
+      ],
+      "confidence": "high",
+      "recommendation": "Create an unprivileged user (`RUN useradd -u 10001 -r -s /sbin/nologin appuser`) and set `USER 10001`."
+    },
+    {
+      "id": "LYR-LARGE-001",
+      "category": "large_layer",
+      "severity": "medium",
+      "classification": "measured",
+      "title": "Large image layer #1 (965.12 MiB)",
+      "evidence": {
+        "layer_index": 1,
+        "size_mib": 965.12,
+        "created_by": "FROM python:3.11"
+      },
+      "likely_causes": [
+        "Compiler toolchain, unstripped binaries, or uncleaned package cache committed to layer"
+      ],
+      "confidence": "high",
+      "recommendation": "Move build tools to a builder stage in a multi-stage Dockerfile and copy only runtime artifacts."
+    },
+    {
+      "id": "LYR-LARGE-002",
+      "category": "large_layer",
+      "severity": "medium",
+      "classification": "measured",
+      "title": "Large image layer #2 (233.65 MiB)",
+      "evidence": {
+        "layer_index": 2,
+        "size_mib": 233.65,
+        "created_by": "/bin/sh -c apt-get update && apt-get install -y build-essential git"
+      },
+      "likely_causes": [
+        "Compiler toolchain, unstripped binaries, or uncleaned package cache committed to layer"
+      ],
+      "confidence": "high",
+      "recommendation": "Move build tools to a builder stage in a multi-stage Dockerfile and copy only runtime artifacts."
+    },
+    {
+      "id": "LYR-SEP-CLEAN-003",
+      "category": "overlayfs_waste",
+      "severity": "high",
+      "classification": "verified",
+      "title": "Cleanup command executed in a separate `RUN` layer does not reclaim bytes from parent layers",
+      "evidence": {
+        "layer_index": 3,
+        "command": "/bin/sh -c rm -rf /var/lib/apt/lists/*",
+        "layer_size_bytes": 0
+      },
+      "likely_causes": [
+        "OverlayFS layers are immutable; deleting files in a later layer only writes whiteout markers"
+      ],
+      "confidence": "high",
+      "recommendation": "Combine package installation and cache cleanup (`&& rm -rf ...`) into a single `RUN` layer."
+    },
+    {
+      "id": "LYR-LARGE-004",
+      "category": "large_layer",
+      "severity": "medium",
+      "classification": "measured",
+      "title": "Large image layer #4 (171.66 MiB)",
+      "evidence": {
+        "layer_index": 4,
+        "size_mib": 171.66,
+        "created_by": "/bin/sh -c pip install -r requirements.txt"
+      },
+      "likely_causes": [
+        "Compiler toolchain, unstripped binaries, or uncleaned package cache committed to layer"
+      ],
+      "confidence": "high",
+      "recommendation": "Move build tools to a builder stage in a multi-stage Dockerfile and copy only runtime artifacts."
+    },
+    {
+      "id": "SEC-ROOT-001",
+      "category": "privilege",
+      "severity": "high",
+      "classification": "verified",
+      "title": "Container runs as root (UID 0)",
+      "evidence": {
+        "user": "root (default)"
+      },
+      "likely_causes": [
+        "No non-root USER specified in Dockerfile or container securityContext"
+      ],
+      "confidence": "high",
+      "recommendation": "Run container as a non-root UID (e.g., `--user 10001:10001`)."
+    },
+    {
+      "id": "SEC-PRIV-001",
+      "category": "privilege",
+      "severity": "critical",
+      "classification": "verified",
+      "title": "Container is running in `--privileged` mode (disables seccomp, AppArmor, and device isolation)",
+      "evidence": {
+        "privileged": true
+      },
+      "likely_causes": [
+        "Container launched with --privileged flag"
+      ],
+      "confidence": "high",
+      "recommendation": "Remove `--privileged` and grant only minimal required Linux capabilities."
+    },
+    {
+      "id": "SEC-CAP-001",
+      "category": "capabilities",
+      "severity": "high",
+      "classification": "verified",
+      "title": "Excessive Linux capabilities granted: CAP_SYS_ADMIN, NET_ADMIN",
+      "evidence": {
+        "cap_add": [
+          "CAP_SYS_ADMIN",
+          "NET_ADMIN"
+        ]
+      },
+      "likely_causes": [
+        "Overly permissive CapAdd configuration"
+      ],
+      "confidence": "high",
+      "recommendation": "Drop all capabilities (`--cap-drop=ALL`) and add back only strictly necessary capabilities."
+    },
+    {
+      "id": "SEC-MOUNT-001",
+      "category": "host_mount",
+      "severity": "critical",
+      "classification": "verified",
+      "title": "Sensitive host path mounted into container: `/var/run/docker.sock` -> `/var/run/docker.sock`",
+      "evidence": {
+        "source": "/var/run/docker.sock",
+        "destination": "/var/run/docker.sock",
+        "rw": true
+      },
+      "likely_causes": [
+        "Mounting Docker socket or sensitive host root directories allows trivial host root escape"
+      ],
+      "confidence": "high",
+      "recommendation": "Remove host `/var/run/docker.sock` or `/etc` mounts, or proxy read-only API calls via a hardened socket proxy."
+    },
+    {
+      "id": "SEC-ROFS-001",
+      "category": "filesystem",
+      "severity": "medium",
+      "classification": "verified",
+      "title": "Container root filesystem is writable (`ReadonlyRootfs: false`)",
+      "evidence": {
+        "readonly_rootfs": false
+      },
+      "likely_causes": [
+        "Default Docker rootfs allows runtime binary tampering"
+      ],
+      "confidence": "high",
+      "recommendation": "Enable `--read-only` root filesystem and mount `/tmp` via `--tmpfs /tmp:rw,noexec,nosuid`."
+    },
+    {
+      "id": "SEC-NNP-001",
+      "category": "privilege_escalation",
+      "severity": "medium",
+      "classification": "verified",
+      "title": "Missing `no-new-privileges:true` in SecurityOpt",
+      "evidence": {
+        "security_opt": []
+      },
+      "likely_causes": [
+        "Setuid/setgid binaries inside container can escalate privileges without no-new-privileges"
+      ],
+      "confidence": "high",
+      "recommendation": "Pass `--security-opt=no-new-privileges:true`."
+    },
+    {
+      "id": "SEC-LIMITS-001",
+      "category": "resource_limits",
+      "severity": "medium",
+      "classification": "verified",
+      "title": "Missing cgroup memory or PIDs limit (`Memory=0` or `PidsLimit=unlimited`)",
+      "evidence": {
+        "memory_limit": 0,
+        "pids_limit": 0
+      },
+      "likely_causes": [
+        "Container can exhaust host RAM or fork-bomb the node"
+      ],
+      "confidence": "high",
+      "recommendation": "Set explicit `--memory` and `--pids-limit` bounds on every container."
+    },
+    {
+      "id": "NET-DEFAULT-BRIDGE",
+      "category": "dns_resolution",
+      "severity": "high",
+      "classification": "verified",
+      "title": "Container is attached only to the default `bridge` network, where Docker embedded DNS (`127.0.0.11`) service discovery is disabled",
+      "evidence": {
+        "attached_networks": [
+          "bridge"
+        ]
+      },
+      "likely_causes": [
+        "Containers on the default docker0 bridge cannot resolve peer containers by container name"
+      ],
+      "confidence": "high",
+      "recommendation": "Create and attach a user-defined bridge network (`docker network create app-net`) to enable automatic DNS name resolution via 127.0.0.11."
+    },
+    {
+      "id": "NET-PORT-UNMAPPED",
+      "category": "port_mapping",
+      "severity": "medium",
+      "classification": "verified",
+      "title": "Exposed container port(s) `9090/tcp` have no host port publishing (`-p`)",
+      "evidence": {
+        "unmapped_ports": [
+          "9090/tcp"
+        ],
+        "ports_map": {
+          "8080/tcp": [
+            {
+              "HostIp": "0.0.0.0",
+              "HostPort": "8080"
+            }
+          ],
+          "9090/tcp": null
+        }
+      },
+      "likely_causes": [
+        "EXPOSE in Dockerfile only documents the port; it does not publish the port to the host without -p / ports: in Compose"
+      ],
+      "confidence": "high",
+      "recommendation": "Publish the port explicitly (e.g., `-p 127.0.0.1:8080:8080`) or route via an internal reverse proxy on the same bridge network."
+    },
+    {
+      "id": "NET-LOOPBACK-BIND",
+      "category": "connection_refused",
+      "severity": "high",
+      "classification": "verified",
+      "title": "Application command binds to `127.0.0.1`/`localhost` inside container, breaking Docker NAT port forwarding",
+      "evidence": {
+        "command": "python3 app.py --host 127.0.0.1 --port 8080",
+        "published_ports": {
+          "8080/tcp": [
+            {
+              "HostIp": "0.0.0.0",
+              "HostPort": "8080"
+            }
+          ],
+          "9090/tcp": null
+        }
+      },
+      "likely_causes": [
+        "Traffic forwarded via Docker bridge veth pair arrives on eth0, not container lo (127.0.0.1)"
+      ],
+      "confidence": "high",
+      "recommendation": "Bind the application server inside the container to `0.0.0.0` (e.g., `--host 0.0.0.0`)."
+    },
+    {
+      "id": "CRASH-OOM-CONFIRMED",
+      "category": "confirmed_oom_kill",
+      "severity": "critical",
+      "classification": "verified",
+      "title": "Confirmed kernel cgroup OOM kill (`State.OOMKilled=true`, `ExitCode=137`)",
+      "evidence": {
+        "exit_code": 137,
+        "oom_killed": true,
+        "memory_limit_bytes": 0,
+        "restart_count": 7
+      },
+      "likely_causes": [
+        "Container working set exceeded cgroup memory limit (`HostConfig.Memory`), triggering Linux kernel cgroup OOM killer"
+      ],
+      "confidence": "high",
+      "recommendation": "Increase container memory limit or configure runtime heap bounds (`GOMEMLIMIT`, `--max-old-space-size`, `-XX:MaxRAMPercentage=80.0`) to 80-85% of the container limit."
+    },
+    {
+      "id": "CRASH-RESTART-LOOP",
+      "category": "restart_loop",
+      "severity": "high",
+      "classification": "verified",
+      "title": "Container is in a restart loop (`RestartCount=7`)",
+      "evidence": {
+        "restart_count": 7,
+        "last_exit_code": 137,
+        "status": "exited"
+      },
+      "likely_causes": [
+        "Repeated process crash or failing healthcheck causing container supervisor to restart the container"
+      ],
+      "confidence": "high",
+      "recommendation": "Inspect logs from the previous run and fix the root cause reflected by `ExitCode` before increasing restart retries."
+    },
+    {
+      "id": "CRASH-HEALTH-001",
+      "category": "healthcheck_failure",
+      "severity": "high",
+      "classification": "verified",
+      "title": "Container healthcheck is UNHEALTHY (failing streak=5)",
+      "evidence": {
+        "failing_streak": 5,
+        "last_exit_code": 1,
+        "last_output": "HTTP probe failed to connect to localhost port 8080: Connection refused"
+      },
+      "likely_causes": [
+        "Healthcheck probe binary missing inside minimal container image, wrong port/loopback binding, or deadlocked application thread pool"
+      ],
+      "confidence": "high",
+      "recommendation": "Verify the healthcheck binary exists inside the container image and that `--start-period` is long enough for initialization."
+    },
+    {
+      "id": "CRASH-K8S-CLBO",
+      "category": "kubernetes_waiting_condition",
+      "severity": "critical",
+      "classification": "verified",
+      "title": "Kubernetes waiting condition `CrashLoopBackOff` on container `payment-processor` (kubelet backoff state; underlying container last terminated with exitCode=137, reason=OOMKilled)",
+      "evidence": {
+        "is_docker_exit_code": false,
+        "kubernetes_waiting_reason": "CrashLoopBackOff",
+        "container": "payment-processor",
+        "restart_count": 7,
+        "last_terminated_reason": "OOMKilled",
+        "last_exit_code": 137
+      },
+      "likely_causes": [
+        "CrashLoopBackOff is a Kubernetes kubelet backoff condition triggered because the container repeatedly exited (last exitCode=137, reason=OOMKilled)"
+      ],
+      "confidence": "high",
+      "recommendation": "Inspect previous pod logs (`kubectl logs <pod> --previous`) and remediate the underlying termination cause (`lastState.terminated`)."
+    }
+  ],
+  "metrics": {
+    "container": {
+      "id": "9f8e7d6c5b4a",
+      "name": "payment-processor-api",
+      "image": "payment-processor:v1.2.0",
+      "user": "root (default)",
+      "state": {
+        "status": "exited",
+        "running": false,
+        "oom_killed": true,
+        "exit_code": 137,
+        "restart_count": 7,
+        "health_status": "unhealthy"
+      },
+      "resources": {
+        "memory_limit_bytes": 0,
+        "nano_cpus": 0,
+        "pids_limit": 0
+      },
+      "mounts": [
+        {
+          "source": "/var/run/docker.sock",
+          "destination": "/var/run/docker.sock",
+          "rw": true,
+          "type": "bind"
+        }
+      ],
+      "exposed_ports": [
+        "8080/tcp",
+        "9090/tcp"
+      ],
+      "environment_variable_keys": [
+        {
+          "name": "APP_ENV",
+          "value": "[REDACTED_FOR_SECURITY]"
+        },
+        {
+          "name": "LOG_LEVEL",
+          "value": "[REDACTED_FOR_SECURITY]"
+        },
+        {
+          "name": "SERVICE_NAME",
+          "value": "[REDACTED_FOR_SECURITY]"
+        }
+      ]
+    },
+    "image": {
+      "size_estimation_policy": "theoretical_recommendations_only_no_fabricated_byte_reductions",
+      "ecosystem": "python",
+      "is_multistage": false,
+      "stage_count": 1,
+      "final_base_image": "python:3.11",
+      "recommended_runtime_base": "python:3.11-slim-bookworm (scratch is unsuitable for CPython interpreter and manylinux C extensions)",
+      "run_instruction_count": 3,
+      "copy_instruction_count": 1
+    },
+    "layers": {
+      "layer_count": 4,
+      "measured_total_size_bytes": 1437000000,
+      "measured_total_size_mib": 1370.43,
+      "heuristic_reclaimable_cache_bytes": 170000000,
+      "heuristic_reclaimable_cache_mib": 162.12
+    },
+    "security": {
+      "total_security_findings": 7,
+      "critical_count": 2,
+      "high_count": 2,
+      "medium_count": 3,
+      "secrets_exposed_in_report": 0
+    },
+    "network": {
+      "networks": [
+        "bridge"
+      ],
+      "published_ports": {
+        "8080/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "8080"
+          }
+        ],
+        "9090/tcp": null
+      },
+      "exposed_ports": [
+        "8080/tcp",
+        "9090/tcp"
+      ],
+      "network_inspect": {
+        "name": "bridge",
+        "driver": "bridge",
+        "internal": false,
+        "ipam_config": [
+          {
+            "Subnet": "172.17.0.0/16",
+            "Gateway": "172.17.0.1"
+          }
+        ]
+      }
+    },
+    "crashes": {
+      "exit_code": 137,
+      "oom_killed": true,
+      "sigkill_without_oom": false,
+      "sigsegv": false,
+      "restart_count": 7,
+      "health_status": "unhealthy",
+      "k8s_inspected": true
+    }
+  },
+  "warnings": [],
+  "recommendations": [
+    "Use `--restart on-failure:5` or `unless-stopped` for long-running services.",
+    "Use a multi-stage build and copy only runtime artifacts into `python:3.11-slim-bookworm (scratch is unsuitable for CPython interpreter and manylinux C extensions)`.",
+    "Chain `&& rm -rf /var/lib/apt/lists/*` inside the exact same `RUN apt-get update && apt-get install -y --no-install-recommends ...` command.",
+    "Pass `pip install --no-cache-dir` or set `ENV PIP_NO_CACHE_DIR=1`.",
+    "Copy only `package*.json` / `requirements.txt` / `go.mod` / `Cargo.toml` first, install dependencies, and then `COPY . .`.",
+    "Add `.git`, `.env*`, `node_modules`, `.venv`, `__pycache__`, and `target/` to `.dockerignore`.",
+    "Create an unprivileged user (`RUN useradd -u 10001 -r -s /sbin/nologin appuser`) and set `USER 10001`.",
+    "Move build tools to a builder stage in a multi-stage Dockerfile and copy only runtime artifacts.",
+    "Combine package installation and cache cleanup (`&& rm -rf ...`) into a single `RUN` layer.",
+    "Run container as a non-root UID (e.g., `--user 10001:10001`).",
+    "Remove `--privileged` and grant only minimal required Linux capabilities.",
+    "Drop all capabilities (`--cap-drop=ALL`) and add back only strictly necessary capabilities.",
+    "Remove host `/var/run/docker.sock` or `/etc` mounts, or proxy read-only API calls via a hardened socket proxy.",
+    "Enable `--read-only` root filesystem and mount `/tmp` via `--tmpfs /tmp:rw,noexec,nosuid`.",
+    "Pass `--security-opt=no-new-privileges:true`.",
+    "Set explicit `--memory` and `--pids-limit` bounds on every container.",
+    "Create and attach a user-defined bridge network (`docker network create app-net`) to enable automatic DNS name resolution via 127.0.0.11.",
+    "Publish the port explicitly (e.g., `-p 127.0.0.1:8080:8080`) or route via an internal reverse proxy on the same bridge network.",
+    "Bind the application server inside the container to `0.0.0.0` (e.g., `--host 0.0.0.0`).",
+    "Increase container memory limit or configure runtime heap bounds (`GOMEMLIMIT`, `--max-old-space-size`, `-XX:MaxRAMPercentage=80.0`) to 80-85% of the container limit.",
+    "Inspect logs from the previous run and fix the root cause reflected by `ExitCode` before increasing restart retries.",
+    "Verify the healthcheck binary exists inside the container image and that `--start-period` is long enough for initialization.",
+    "Inspect previous pod logs (`kubectl logs <pod> --previous`) and remediate the underlying termination cause (`lastState.terminated`)."
+  ],
+  "errors": []
+}

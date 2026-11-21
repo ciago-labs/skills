@@ -1,0 +1,89 @@
+[
+  {
+    "Id": "9f8e7d6c5b4a32109f8e7d6c5b4a3210",
+    "Name": "/payment-processor-api",
+    "RestartCount": 7,
+    "State": {
+      "Status": "exited",
+      "Running": false,
+      "OOMKilled": true,
+      "ExitCode": 137,
+      "Error": "",
+      "Health": {
+        "Status": "unhealthy",
+        "FailingStreak": 5,
+        "Log": [
+          {
+            "ExitCode": 1,
+            "Output": "HTTP probe failed to connect to localhost port 8080: Connection refused"
+          }
+        ]
+      }
+    },
+    "Config": {
+      "Image": "payment-processor:v1.2.0",
+      "User": "",
+      "Env": [
+        "APP_ENV=production",
+        "LOG_LEVEL=info",
+        "SERVICE_NAME=payment-processor-api"
+      ],
+      "Entrypoint": [
+        "python3"
+      ],
+      "Cmd": [
+        "app.py",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8080"
+      ],
+      "ExposedPorts": {
+        "8080/tcp": {},
+        "9090/tcp": {}
+      }
+    },
+    "HostConfig": {
+      "Privileged": true,
+      "CapAdd": [
+        "CAP_SYS_ADMIN",
+        "NET_ADMIN"
+      ],
+      "NetworkMode": "bridge",
+      "ReadonlyRootfs": false,
+      "SecurityOpt": [],
+      "Memory": 0,
+      "NanoCpus": 0,
+      "PidsLimit": 0,
+      "RestartPolicy": {
+        "Name": "no",
+        "MaximumRetryCount": 0
+      }
+    },
+    "Mounts": [
+      {
+        "Type": "bind",
+        "Source": "/var/run/docker.sock",
+        "Destination": "/var/run/docker.sock",
+        "RW": true
+      }
+    ],
+    "NetworkSettings": {
+      "Ports": {
+        "8080/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "8080"
+          }
+        ],
+        "9090/tcp": null
+      },
+      "Networks": {
+        "bridge": {
+          "IPAddress": "172.17.0.4",
+          "Gateway": "172.17.0.1"
+        }
+      }
+    }
+  }
+]
