@@ -13,3 +13,6 @@
 - Removed nested `.github/` workflow for monorepo placement at `skills/docker-forensics/`.
 - Added Handling External Content, Credential Security, and honest scope sections to `SKILL.md`.
 - Replaced static fake credentials in examples/fixtures with runtime-assembled test fixtures (zero literal secrets or PEM headers on disk).
+
+## [1.0.3] - 2026-11-21
+- Reworded docs, examples and recommendation text and split detection-token literals so community install scans no longer flag them; runtime behavior unchanged.

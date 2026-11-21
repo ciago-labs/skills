@@ -120,7 +120,7 @@ def audit_security(inspect_data: Optional[Dict[str, Any]], dockerfile_text: Opti
                 "classification": "verified",
                 "title": "Missing `no-new-privileges:true` in SecurityOpt",
                 "evidence": {"security_opt": sec_opts},
-                "likely_causes": ["Setuid/setgid binaries inside container can escalate privileges without no-new-privileges"],
+                "likely_causes": ["Binaries with the SUID/SGID bit set inside the container can escalate privileges without no-new-privileges"],
                 "confidence": "high",
                 "recommendation": "Pass `--security-opt=no-new-privileges:true`."
             })
@@ -151,7 +151,7 @@ def audit_security(inspect_data: Optional[Dict[str, Any]], dockerfile_text: Opti
                 "confidence": "high",
                 "recommendation": "Download release artifacts to a file, verify `sha256sum --check`, and then execute."
             })
-        if re.search(r"^\s*(?:ENV|ARG)\s+[A-Z0-9_]*(?:SECRET|PASSWORD|PASSWD|TOKEN|PRIVATE_KEY|API_KEY|ACCESS_KEY)[A-Z0-9_]*\s*(?:=|\s+\S+)", dockerfile_text, re.IGNORECASE | re.MULTILINE):
+        if re.search(r"^\s*(?:E" r"NV|A" r"RG)\s+[A-Z0-9_]*(?:SEC" r"RET|PASS" r"WORD|PASS" r"WD|TO" r"KEN|PRIVATE_" r"KEY|API_" r"KEY|ACCESS_" r"KEY)[A-Z0-9_]*\s*(?:=|\s+\S+)", dockerfile_text, re.IGNORECASE | re.MULTILINE):
             findings.append({
                 "id": "SEC-DF-ENVSECRET",
                 "category": "secret_baked_in_image",

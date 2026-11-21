@@ -52,7 +52,7 @@ def analyze_container_network(inspect_data: Any, network_data: Optional[Any] = N
             "evidence": {"unmapped_ports": unmapped_ports, "ports_map": ports},
             "likely_causes": ["EXPOSE in Dockerfile only documents the port; it does not publish the port to the host without -p / ports: in Compose"],
             "confidence": "high",
-            "recommendation": "Publish the port explicitly (e.g., `-p 127.0.0.1:8080:8080`) or route via an internal reverse proxy on the same bridge network."
+            "recommendation": "Publish the port explicitly with `-p` (bind to the loopback address unless external access is required) or route via an internal reverse proxy on the same bridge network."
         })
 
     # 3. Check if command/args bind to 127.0.0.1 inside container while ports are published

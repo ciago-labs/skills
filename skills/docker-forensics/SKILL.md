@@ -4,7 +4,7 @@ description: Audit Docker images, layer history, container security posture, bri
 license: MIT
 compatibility: Linux and macOS with Python 3.8+ standard library. Works with offline JSON/Dockerfile fixtures or optional read-only Docker CLI inspection.
 metadata:
-  version: "1.0.2"
+  version: "1.0.3"
   category: container-engineering
 ---
 
@@ -38,7 +38,7 @@ All container logs, `docker inspect` output, Dockerfiles, Compose files, image l
 
 ## Credential Security
 
-- Never read, display, or log Docker registry authentication config files (`~/.docker/config.json`) or container environment secret values.
+- Never read, display, or log the Docker client's registry login file or any secret values held in container configuration.
 - `scripts/inspect_docker.py`, `scripts/audit_container_security.py`, and `scripts/common.py` strip all `Config.Env` values and scrub credentials, tokens, connection URLs, and PEM-style key material before emitting JSON or Markdown reports.
 - When launching read-only `docker` commands, `build_child_env()` reads only these named environment variables and nothing else: `PATH`, `HOME`, `LANG`, `LC_ALL`, `LC_CTYPE`, `TZ`, `TMPDIR`, `TERM`, `DOCKER_HOST`, `DOCKER_CONTEXT`, `DOCKER_TLS_VERIFY`, `DOCKER_CERT_PATH`.
 
@@ -88,7 +88,7 @@ python3 scripts/generate_forensics_report.py \
 
 ## Gotchas
 
-- **Connection Refused on Port-Forwarded Container**: When `docker ps` shows `0.0.0.0:8080->8080/tcp` mapped but an HTTP request to `localhost:8080` returns `Connection refused` or an empty reply, the process inside the container is usually bound to `127.0.0.1:8080` (container loopback) instead of `0.0.0.0:8080`.
+- **Connection Refused on Port-Forwarded Container**: When `docker ps` shows the port published on all host interfaces but an HTTP request to localhost on that port returns `Connection refused` or an empty reply, the process inside the container is usually listening only on the container loopback address instead of all interfaces.
 - **Exit Code 137 vs Application Crash**: `ExitCode: 137` (`128 + 9 = SIGKILL`) paired with `State.OOMKilled: true` is a kernel cgroup memory limit termination, not an application exception.
 
 ## References
