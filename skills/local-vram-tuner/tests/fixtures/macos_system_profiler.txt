@@ -1,0 +1,19 @@
+Hardware:
+
+    Hardware Overview:
+
+      Model Name: MacBook Pro
+      Model Identifier: Mac15,9
+      Chip: Apple M3 Max
+      Total Number of Cores: 16 (12 performance and 4 efficiency)
+      Memory: 64 GB
+
+Graphics/Displays:
+
+    Apple M3 Max:
+
+      Chipset Model: Apple M3 Max
+      Type: GPU
+      Bus: Built-In
+      Total Number of Cores: 40
+      Metal Support: Metal 3
