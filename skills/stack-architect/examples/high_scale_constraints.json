@@ -1,0 +1,23 @@
+{
+  "product_type": "fintech_payment_gateway",
+  "product_complexity": "high",
+  "expected_concurrent_users": 15000,
+  "expected_rps": 1200,
+  "read_write_ratio": "60:40",
+  "api_traffic_pattern": "burst_5x",
+  "data_storage_gb": 500,
+  "monthly_data_growth_gb": 80,
+  "p95_latency_ms": 80,
+  "availability_sla_pct": 99.99,
+  "monthly_budget_usd": 1500.0,
+  "deployment_region": "us-east-1",
+  "team_size": 12,
+  "team_experience": "go_rust_postgres_redis",
+  "maintenance_capacity": "dedicated_platform_team",
+  "compliance_requirements": [
+    "pci_dss",
+    "soc2_type2"
+  ],
+  "rpo_minutes": 1,
+  "rto_minutes": 5
+}

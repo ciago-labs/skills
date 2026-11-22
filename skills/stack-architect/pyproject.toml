@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stack-architect"
+version = "1.0.2"
+description = "Constraint-Driven Technology Stack Compiler, Infrastructure Sizing Engine, and Runnable Day-0 Product Scaffolder"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

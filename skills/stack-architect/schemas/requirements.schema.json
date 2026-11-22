@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StackArchitectRequirementsOutput",
+  "type": "object",
+  "required": [
+    "status",
+    "timestamp",
+    "platform",
+    "tool_versions",
+    "metrics",
+    "errors"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "warning",
+        "error"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 10
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "normalized_constraints",
+        "assumptions_register",
+        "clarification_questionnaire"
+      ],
+      "properties": {
+        "normalized_constraints": {
+          "type": "object"
+        },
+        "assumptions_register": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "field",
+              "assumed_value",
+              "source",
+              "rationale"
+            ],
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "user_provided",
+                  "default_assumption"
+                ]
+              },
+              "rationale": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "clarification_questionnaire": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

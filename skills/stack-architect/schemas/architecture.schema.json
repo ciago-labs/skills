@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StackArchitectBlueprintOutput",
+  "type": "object",
+  "required": [
+    "status",
+    "timestamp",
+    "metrics",
+    "errors"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "warning",
+        "error"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 10
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "1_requirements_document",
+        "2_assumptions_register",
+        "3_workload_estimation",
+        "4_hardware_sizing_report",
+        "5_infrastructure_cost_comparison",
+        "6_recommended_technology_stack",
+        "7_architecture_diagram_mermaid",
+        "8_adr_documents",
+        "9_deployment_architecture",
+        "11_scaling_and_failure_considerations",
+        "12_operational_checklist"
+      ]
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

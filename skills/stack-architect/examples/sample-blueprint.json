@@ -1,0 +1,952 @@
+{
+  "status": "ok",
+  "timestamp": "2026-11-17T18:30:22.834498+00:00",
+  "platform": {
+    "system": "Linux",
+    "release": "6.12.105+"
+  },
+  "tool_versions": {
+    "python": "3.11.2"
+  },
+  "findings": [
+    {
+      "id": "REQ-VAL-001",
+      "category": "requirements_validation",
+      "severity": "low",
+      "classification": "verified",
+      "title": "Validated 18 architecture constraints (16 user-provided, 2 explicit assumptions)",
+      "evidence": {
+        "user_provided_count": 16,
+        "assumed_count": 2,
+        "monthly_budget_usd": 120.0,
+        "expected_rps": 150
+      },
+      "likely_causes": [
+        "Constraint ingestion and normalization"
+      ],
+      "confidence": "high",
+      "recommendation": "Review the Assumptions Register before finalizing production procurement."
+    },
+    {
+      "id": "WKL-CALC-001",
+      "category": "workload_estimation",
+      "severity": "info",
+      "classification": "verified",
+      "title": "Baseline peak throughput is 450.0 RPS (1159 DB IOPS, 6674.19 GB/mo egress)",
+      "evidence": {
+        "avg_rps": 150.0,
+        "peak_rps": 450.0,
+        "peak_read_rps": 382.5,
+        "peak_write_rps": 67.5,
+        "littles_law_active_concurrency": 27,
+        "estimated_peak_db_iops": 1159,
+        "peak_bandwidth_mbps": 81.1,
+        "monthly_egress_gb": 6674.19
+      },
+      "likely_causes": [
+        "Deterministic Little's Law and payload bandwidth modeling"
+      ],
+      "confidence": "high",
+      "recommendation": "Size primary compute and database tiers for at least the 2x growth envelope to maintain 50% headroom."
+    },
+    {
+      "id": "SIZE-COMP-001",
+      "category": "capacity_sizing",
+      "severity": "info",
+      "classification": "verified",
+      "title": "Sized application tier at 4 vCPU / 8 GiB RAM and database tier at 16 vCPU / 64 GiB RAM with 184 GB Year-1 NVMe storage",
+      "evidence": {
+        "app_vcpus": 4,
+        "app_ram_gib": 8,
+        "db_vcpus": 16,
+        "db_ram_gib": 64,
+        "year1_storage_gb": 184
+      },
+      "likely_causes": [
+        "Deterministic working-set and headroom capacity formulas"
+      ],
+      "confidence": "high",
+      "recommendation": "Monitor CPU steal/utilization and PostgreSQL buffer cache hit ratio (>99% target) before vertical scaling."
+    },
+    {
+      "id": "COST-EST-001",
+      "category": "cost_estimation",
+      "severity": "info",
+      "classification": "verified",
+      "title": "3 of 6 verified standard deployment architectures fit within the $120.0/month budget",
+      "evidence": {
+        "monthly_budget_usd": 120.0,
+        "fitting_options": [
+          "opt-aws-single-ec2-compose",
+          "opt-aws-ec2-plus-rds",
+          "opt-hetzner-baremetal-ax42-1"
+        ]
+      },
+      "likely_causes": [
+        "Comparison against verified 2026-11-17 cloud and Hetzner AX42-1 rate cards"
+      ],
+      "confidence": "high",
+      "recommendation": "Select `AWS EC2 (`t4g.medium`) + Managed Amazon RDS PostgreSQL (`db.t4g.medium`)` to balance operational simplicity and budget."
+    },
+    {
+      "id": "STK-COMP-001",
+      "category": "stack_selection",
+      "severity": "info",
+      "classification": "verified",
+      "title": "Compiled cohesive 13-layer stack anchored on Go 1.23 (compiled static binary), PostgreSQL 16, and in-process cache + Caddy/Docker Compose",
+      "evidence": {
+        "backend_runtime": "go",
+        "runtime_label": "Go 1.23 (compiled static binary)",
+        "backend_framework": "Go net/http + chi router + sqlc",
+        "frontend_framework": "React 19 + TanStack Start / Vite + Tailwind CSS",
+        "database": "postgresql-16",
+        "cache_strategy": "in_process",
+        "redis_enabled": false,
+        "queue_strategy": "postgres_skip_locked",
+        "authentication": "stateless_jwt_httponly_cookie",
+        "object_storage": "s3_compatible",
+        "reverse_proxy": "caddy-2",
+        "deployment": "docker_compose",
+        "healthcheck_strategy": {
+          "endpoint": "/healthz",
+          "port": 8080,
+          "probe_command": [
+            "/app/server",
+            "--healthcheck"
+          ],
+          "entrypoint": [
+            "/app/server"
+          ]
+        }
+      },
+      "likely_causes": [
+        "Constraint-driven architecture selection favoring operational simplicity"
+      ],
+      "confidence": "high",
+      "recommendation": "Use scripts/scaffold_infrastructure.py to materialize the runtime-matched Day-0 configuration files."
+    }
+  ],
+  "metrics": {
+    "1_requirements_document": {
+      "product_type": "b2b_developer_saas",
+      "product_complexity": "medium",
+      "expected_concurrent_users": 800,
+      "expected_rps": 150,
+      "read_write_ratio": "85:15",
+      "api_traffic_pattern": "diurnal_burst_3x",
+      "data_storage_gb": 40,
+      "monthly_data_growth_gb": 8,
+      "p95_latency_ms": 120,
+      "availability_sla_pct": 99.9,
+      "monthly_budget_usd": 120.0,
+      "deployment_region": "us-east-1",
+      "team_size": 2,
+      "team_experience": "go_typescript_postgres",
+      "maintenance_capacity": "low_ops_overhead",
+      "compliance_requirements": [
+        "soc2_audit_trail"
+      ],
+      "rpo_minutes": 15,
+      "rto_minutes": 30,
+      "read_fraction": 0.85,
+      "write_fraction": 0.15
+    },
+    "2_assumptions_register": [
+      {
+        "field": "product_type",
+        "assumed_value": "b2b_developer_saas",
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "product_complexity",
+        "assumed_value": "medium",
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "expected_concurrent_users",
+        "assumed_value": 800,
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "expected_rps",
+        "assumed_value": 150,
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "read_write_ratio",
+        "assumed_value": "85:15",
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "api_traffic_pattern",
+        "assumed_value": "diurnal_burst_3x",
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "data_storage_gb",
+        "assumed_value": 40,
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "monthly_data_growth_gb",
+        "assumed_value": 8,
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "p95_latency_ms",
+        "assumed_value": 120,
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "availability_sla_pct",
+        "assumed_value": 99.9,
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "monthly_budget_usd",
+        "assumed_value": 120.0,
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "deployment_region",
+        "assumed_value": "us-east-1",
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "team_size",
+        "assumed_value": 2,
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "team_experience",
+        "assumed_value": "go_typescript_postgres",
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "maintenance_capacity",
+        "assumed_value": "low_ops_overhead",
+        "source": "default_assumption",
+        "rationale": "Assumed < 4 hours/week infrastructure maintenance capacity"
+      },
+      {
+        "field": "compliance_requirements",
+        "assumed_value": [
+          "soc2_audit_trail"
+        ],
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "rpo_minutes",
+        "assumed_value": 15,
+        "source": "user_provided",
+        "rationale": "Explicitly provided in constraints specification."
+      },
+      {
+        "field": "rto_minutes",
+        "assumed_value": 30,
+        "source": "default_assumption",
+        "rationale": "Assumed 30-minute Recovery Time Objective via automated backup restore or standby promotion"
+      }
+    ],
+    "3_workload_estimation": {
+      "formulas_used": {
+        "peak_rps": "avg_rps * burst_factor",
+        "littles_law_concurrency": "ceil(peak_rps * (0.5 * p95_latency_sec))",
+        "db_iops": "ceil(peak_read_rps * 2.5 + peak_write_rps * 3.0)",
+        "monthly_egress_gb": "avg_rps * 2,592,000_sec * 18_KiB / 1024^3"
+      },
+      "baseline_1x": {
+        "avg_rps": 150.0,
+        "peak_rps": 450.0,
+        "peak_read_rps": 382.5,
+        "peak_write_rps": 67.5,
+        "littles_law_active_concurrency": 27,
+        "estimated_peak_db_iops": 1159,
+        "peak_bandwidth_mbps": 81.1,
+        "monthly_egress_gb": 6674.19
+      },
+      "sensitivity_2x_growth": {
+        "avg_rps": 300.0,
+        "peak_rps": 900.0,
+        "peak_read_rps": 765.0,
+        "peak_write_rps": 135.0,
+        "littles_law_active_concurrency": 54,
+        "estimated_peak_db_iops": 2318,
+        "peak_bandwidth_mbps": 162.2,
+        "monthly_egress_gb": 13348.39
+      },
+      "sensitivity_5x_surge": {
+        "avg_rps": 750.0,
+        "peak_rps": 2250.0,
+        "peak_read_rps": 1912.5,
+        "peak_write_rps": 337.5,
+        "littles_law_active_concurrency": 135,
+        "estimated_peak_db_iops": 5794,
+        "peak_bandwidth_mbps": 405.5,
+        "monthly_egress_gb": 33370.97
+      }
+    },
+    "4_hardware_sizing_report": {
+      "capacity_disclaimer": "Theoretical deterministic engineering estimate; validate under load testing before production commitment.",
+      "application_tier": {
+        "recommended_vcpus": 4,
+        "recommended_ram_gib": 8,
+        "ha_instances": 1,
+        "headroom_pct": 40.0
+      },
+      "database_tier": {
+        "recommended_vcpus": 16,
+        "recommended_ram_gib": 64,
+        "estimated_working_set_gib": 27.2,
+        "recommended_shared_buffers_gib": 16.0,
+        "initial_dataset_gb": 40.0,
+        "year1_dataset_gb": 136.0,
+        "year1_provisioned_nvme_gb": 184,
+        "standby_replicas": 0
+      },
+      "scaling_thresholds": {
+        "add_read_replica_or_cache_at_rps": 1125.0,
+        "split_worker_node_at_cpu_pct": 70.0,
+        "partition_tables_at_dataset_gb": 250
+      }
+    },
+    "5_infrastructure_cost_comparison": {
+      "monthly_budget_usd": 120.0,
+      "verified_pricing_records": [
+        {
+          "id": "aws-ec2-t4g-medium",
+          "offering_type": "standard",
+          "provider": "AWS",
+          "region": "us-east-2 (Ohio)",
+          "service": "Amazon EC2 On-Demand",
+          "instance_type": "t4g.medium",
+          "resource_specifications": "2 vCPU AWS Graviton2, 4 GiB RAM, EBS-only",
+          "instance_configuration": "t4g.medium (2 vCPU Graviton2, 4 GiB RAM)",
+          "currency": "USD",
+          "price": 0.0336,
+          "price_usd": 0.0336,
+          "monthly_usd_730h": 24.53,
+          "setup_fee": 0.0,
+          "ipv4_monthly_fee": 3.65,
+          "vat_included": false,
+          "billing_unit": "USD per hour (excl. taxes)",
+          "source_url": "https://aws.amazon.com/ec2/pricing/on-demand/",
+          "verification_timestamp": "2026-11-17T00:00:00Z",
+          "verification_date": "2026-11-17",
+          "provenance_type": "verified_current_price"
+        },
+        {
+          "id": "aws-ec2-t4g-large",
+          "offering_type": "standard",
+          "provider": "AWS",
+          "region": "us-east-2 (Ohio)",
+          "service": "Amazon EC2 On-Demand",
+          "instance_type": "t4g.large",
+          "resource_specifications": "2 vCPU AWS Graviton2, 8 GiB RAM, EBS-only",
+          "instance_configuration": "t4g.large (2 vCPU Graviton2, 8 GiB RAM)",
+          "currency": "USD",
+          "price": 0.0672,
+          "price_usd": 0.0672,
+          "monthly_usd_730h": 49.06,
+          "setup_fee": 0.0,
+          "ipv4_monthly_fee": 3.65,
+          "vat_included": false,
+          "billing_unit": "USD per hour (excl. taxes)",
+          "source_url": "https://aws.amazon.com/ec2/pricing/on-demand/",
+          "verification_timestamp": "2026-11-17T00:00:00Z",
+          "verification_date": "2026-11-17",
+          "provenance_type": "verified_current_price"
+        },
+        {
+          "id": "aws-rds-db-t4g-medium",
+          "offering_type": "standard",
+          "provider": "AWS",
+          "region": "us-east-1",
+          "service": "Amazon RDS for PostgreSQL (Single-AZ)",
+          "instance_type": "db.t4g.medium",
+          "resource_specifications": "2 vCPU Graviton2, 4 GB RAM",
+          "instance_configuration": "db.t4g.medium (2 vCPU, 4 GB RAM)",
+          "currency": "USD",
+          "price": 0.065,
+          "price_usd": 0.065,
+          "monthly_usd_730h": 47.45,
+          "setup_fee": 0.0,
+          "ipv4_monthly_fee": 0.0,
+          "vat_included": false,
+          "billing_unit": "USD per hour",
+          "source_url": "https://instances.vantage.sh/aws/rds/db.t4g.medium",
+          "verification_timestamp": "2026-11-17T00:00:00Z",
+          "verification_date": "2026-11-17",
+          "provenance_type": "verified_current_price"
+        },
+        {
+          "id": "aws-rds-db-t4g-large",
+          "offering_type": "standard",
+          "provider": "AWS",
+          "region": "us-east-1",
+          "service": "Amazon RDS for PostgreSQL (Single-AZ)",
+          "instance_type": "db.t4g.large",
+          "resource_specifications": "2 vCPU Graviton2, 8 GB RAM",
+          "instance_configuration": "db.t4g.large (2 vCPU, 8 GB RAM)",
+          "currency": "USD",
+          "price": 0.129,
+          "price_usd": 0.129,
+          "monthly_usd_730h": 94.17,
+          "setup_fee": 0.0,
+          "ipv4_monthly_fee": 0.0,
+          "vat_included": false,
+          "billing_unit": "USD per hour",
+          "source_url": "https://instances.vantage.sh/aws/rds/db.t4g.large",
+          "verification_timestamp": "2026-11-17T00:00:00Z",
+          "verification_date": "2026-11-17",
+          "provenance_type": "verified_current_price"
+        },
+        {
+          "id": "aws-rds-db-t4g-xlarge",
+          "offering_type": "standard",
+          "provider": "AWS",
+          "region": "us-east-1",
+          "service": "Amazon RDS for PostgreSQL (Single-AZ)",
+          "instance_type": "db.t4g.xlarge",
+          "resource_specifications": "4 vCPU Graviton2, 16 GB RAM",
+          "instance_configuration": "db.t4g.xlarge (4 vCPU, 16 GB RAM)",
+          "currency": "USD",
+          "price": 0.26,
+          "price_usd": 0.26,
+          "monthly_usd_730h": 189.8,
+          "setup_fee": 0.0,
+          "ipv4_monthly_fee": 0.0,
+          "vat_included": false,
+          "billing_unit": "USD per hour",
+          "source_url": "https://www.economize.cloud/resources/aws/pricing/rds/db.t4g.xlarge/",
+          "verification_timestamp": "2026-11-17T00:00:00Z",
+          "verification_date": "2026-11-17",
+          "provenance_type": "verified_current_price"
+        },
+        {
+          "id": "gcp-gce-e2-standard-2",
+          "offering_type": "standard",
+          "provider": "Google Cloud",
+          "region": "us-central1 (Iowa)",
+          "service": "Compute Engine On-Demand",
+          "instance_type": "e2-standard-2",
+          "resource_specifications": "2 vCPU, 8 GB RAM",
+          "instance_configuration": "e2-standard-2 (2 vCPU, 8 GB RAM)",
+          "currency": "USD",
+          "price": 0.07,
+          "price_usd": 0.07,
+          "monthly_usd_730h": 48.92,
+          "setup_fee": 0.0,
+          "ipv4_monthly_fee": 3.65,
+          "vat_included": false,
+          "billing_unit": "USD per hour ($48.92/month)",
+          "source_url": "https://www.economize.cloud/resources/gcp/pricing/compute-engine/e2-standard-2/",
+          "verification_timestamp": "2026-11-17T00:00:00Z",
+          "verification_date": "2026-11-17",
+          "provenance_type": "verified_current_price"
+        },
+        {
+          "id": "gcp-cloud-sql-pg-2vcpu-8gb",
+          "offering_type": "standard",
+          "provider": "Google Cloud",
+          "region": "us-central1 (Iowa)",
+          "service": "Cloud SQL for PostgreSQL Enterprise (Zonal)",
+          "instance_type": "db-custom-2-8192",
+          "resource_specifications": "2 vCPU ($0.054/vCPU-hr) + 8 GiB RAM ($0.009/GiB-hr)",
+          "instance_configuration": "2 vCPU ($0.054/vCPU-hr) + 8 GiB RAM ($0.009/GiB-hr)",
+          "currency": "USD",
+          "price": 0.18,
+          "price_usd": 0.18,
+          "monthly_usd_730h": 131.4,
+          "setup_fee": 0.0,
+          "ipv4_monthly_fee": 0.0,
+          "vat_included": false,
+          "billing_unit": "USD per hour (2*$0.054 + 8*$0.009)",
+          "source_url": "https://cloud.google.com/sql/pricing",
+          "verification_timestamp": "2026-11-17T00:00:00Z",
+          "verification_date": "2026-11-17",
+          "provenance_type": "verified_current_price"
+        },
+        {
+          "id": "azure-vm-b2ms",
+          "offering_type": "standard",
+          "provider": "Microsoft Azure",
+          "region": "eastus (East US)",
+          "service": "Azure Virtual Machines (Linux Pay-As-You-Go)",
+          "instance_type": "Standard_B2ms",
+          "resource_specifications": "2 vCPU, 8 GB RAM, 16 GB temp storage",
+          "instance_configuration": "Standard_B2ms (2 vCPU, 8 GB RAM)",
+          "currency": "USD",
+          "price": 0.0832,
+          "price_usd": 0.0832,
+          "monthly_usd_730h": 60.74,
+          "setup_fee": 0.0,
+          "ipv4_monthly_fee": 3.65,
+          "vat_included": false,
+          "billing_unit": "USD per hour ($60.74/month)",
+          "source_url": "https://www.economize.cloud/resources/azure/pricing/virtual-machine/b2ms/",
+          "verification_timestamp": "2026-11-17T00:00:00Z",
+          "verification_date": "2026-11-17",
+          "provenance_type": "verified_current_price"
+        },
+        {
+          "id": "hetzner-dedicated-ax42-1-standard",
+          "offering_type": "standard",
+          "provider": "Hetzner",
+          "region": "eu-central (Falkenstein DE / Helsinki FI)",
+          "service": "Dedicated Root Server AX42-1 (Standard Offering)",
+          "instance_type": "AX42-1",
+          "resource_specifications": "AMD Ryzen 7 PRO 8700GE (8 Cores / 16 Threads), 64 GB DDR5 RAM, 2x 512 GB Gen4 NVMe SSD",
+          "instance_configuration": "AX42-1 Standard (8C/16T Ryzen 7 PRO 8700GE, 64 GB DDR5 RAM, 2x 512 GB NVMe)",
+          "currency": "EUR",
+          "price": 97.3,
+          "setup_fee": 49.0,
+          "ipv4_monthly_fee": 1.7,
+          "ipv4_setup_fee": 0.0,
+          "total_monthly_eur_with_ipv4": 99.0,
+          "total_setup_eur_with_ipv4": 49.0,
+          "vat_included": false,
+          "vat_notes": "Prices exclude 19% VAT (USt)",
+          "price_usd": 115.83,
+          "monthly_usd_730h": 115.83,
+          "billing_unit": "EUR per month recurring (\u20ac97.30 server + \u20ac1.70 primary IPv4, excl. VAT; plus \u20ac49.00 server setup + \u20ac0.00 primary IPv4 setup one-time)",
+          "source_url": "https://www.hetzner.com/dedicated-rootserver/ax42/configurator/",
+          "ipv4_pricing_source_url": "https://docs.hetzner.com/general/infrastructure-and-availability/ipv4-pricing/",
+          "verification_timestamp": "2026-11-17T00:00:00Z",
+          "verification_date": "2026-11-17",
+          "provenance_type": "verified_current_price"
+        },
+        {
+          "id": "hetzner-dedicated-ax42-2-ecc",
+          "offering_type": "standard",
+          "provider": "Hetzner",
+          "region": "eu-central (Falkenstein DE / Helsinki FI)",
+          "service": "Dedicated Root Server AX42-2 ECC (Standard Offering)",
+          "instance_type": "AX42-2",
+          "resource_specifications": "AMD Ryzen 7 PRO 8700GE (8 Cores / 16 Threads), 64 GB DDR5 ECC RAM, 2x 512 GB Gen4 NVMe SSD",
+          "instance_configuration": "AX42-2 ECC Standard (8C/16T Ryzen 7 PRO 8700GE, 64 GB DDR5 ECC RAM, 2x 512 GB NVMe)",
+          "currency": "EUR",
+          "price": 187.3,
+          "setup_fee": 49.0,
+          "ipv4_monthly_fee": 1.7,
+          "ipv4_setup_fee": 0.0,
+          "total_monthly_eur_with_ipv4": 189.0,
+          "total_setup_eur_with_ipv4": 49.0,
+          "vat_included": false,
+          "vat_notes": "Prices exclude 19% VAT (USt)",
+          "price_usd": 221.13,
+          "monthly_usd_730h": 221.13,
+          "billing_unit": "EUR per month recurring (\u20ac187.30 server + \u20ac1.70 primary IPv4, excl. VAT; plus \u20ac49.00 server setup + \u20ac0.00 primary IPv4 setup one-time)",
+          "source_url": "https://www.hetzner.com/dedicated-rootserver/ax42/configurator/",
+          "ipv4_pricing_source_url": "https://docs.hetzner.com/general/infrastructure-and-availability/ipv4-pricing/",
+          "verification_timestamp": "2026-11-17T00:00:00Z",
+          "verification_date": "2026-11-17",
+          "provenance_type": "verified_current_price"
+        },
+        {
+          "id": "hetzner-dedicated-additional-single-ipv4",
+          "offering_type": "addon",
+          "provider": "Hetzner",
+          "region": "eu-central (Falkenstein DE / Helsinki FI)",
+          "service": "Dedicated Root Server Additional Single IPv4 Address (Optional Add-on)",
+          "instance_type": "Additional-Single-IPv4",
+          "resource_specifications": "1x Additional single IPv4 address for Dedicated Root Servers (distinct from Primary IPv4)",
+          "instance_configuration": "Additional Single IPv4 (\u20ac1.70/mo + \u20ac4.90 one-time setup, excl. VAT)",
+          "currency": "EUR",
+          "price": 1.7,
+          "setup_fee": 4.9,
+          "ipv4_monthly_fee": 1.7,
+          "ipv4_setup_fee": 4.9,
+          "vat_included": false,
+          "vat_notes": "Prices exclude 19% VAT (USt); Primary IPv4 has \u20ac0.00 setup fee, whereas Additional Single IPv4 has \u20ac4.90 setup fee",
+          "price_usd": 1.9,
+          "monthly_usd_730h": 1.9,
+          "billing_unit": "EUR per month recurring (\u20ac1.70/mo excl. VAT; plus \u20ac4.90 one-time setup fee for additional single IPv4)",
+          "source_url": "https://docs.hetzner.com/general/infrastructure-and-availability/ipv4-pricing/",
+          "verification_timestamp": "2026-11-17T00:00:00Z",
+          "verification_date": "2026-11-17",
+          "provenance_type": "verified_current_price"
+        },
+        {
+          "id": "hetzner-dedicated-ax41-1-ltd-promotional",
+          "offering_type": "limited_promotional",
+          "provider": "Hetzner",
+          "region": "eu-central (Germany / Finland, subject to stock)",
+          "service": "Dedicated Root Server AX41-1-LTD (Limited / Promotional Offering)",
+          "instance_type": "AX41-1-LTD",
+          "resource_specifications": "Supply-limited promotional dedicated server (excluded from standard SLA capacity planning)",
+          "instance_configuration": "AX41-1-LTD Promotional (Supply-limited stock)",
+          "currency": "EUR",
+          "price": 57.3,
+          "setup_fee": 0.0,
+          "ipv4_monthly_fee": 1.7,
+          "vat_included": false,
+          "vat_notes": "Excludes VAT; promotional limited availability",
+          "price_usd": 69.03,
+          "monthly_usd_730h": 69.03,
+          "billing_unit": "EUR per month recurring (\u20ac57.30 base + \u20ac1.70 primary IPv4, excl. VAT; limited stock)",
+          "source_url": "https://www.hetzner.com/dedicated-rootserver/",
+          "verification_timestamp": "2026-11-17T00:00:00Z",
+          "verification_date": "2026-11-17",
+          "provenance_type": "verified_current_price"
+        }
+      ],
+      "deployment_options": [
+        {
+          "option_id": "opt-aws-single-ec2-compose",
+          "offering_type": "standard",
+          "name": "Single-Node AWS EC2 (`t4g.large`, 2 vCPU / 8 GiB) running Docker Compose + PostgreSQL",
+          "Estimated_Monthly_USD": 49.06,
+          "one_time_setup_usd": 0.0,
+          "fits_budget": true,
+          "components": [
+            "aws-ec2-t4g-large"
+          ],
+          "provenance": "verified_current_price",
+          "tradeoffs": "Lowest cloud cost; requires automated S3 pgBackRest/WAL-G backups since DB is self-hosted on EC2."
+        },
+        {
+          "option_id": "opt-aws-ec2-plus-rds",
+          "offering_type": "standard",
+          "name": "AWS EC2 (`t4g.medium`) + Managed Amazon RDS PostgreSQL (`db.t4g.medium`)",
+          "Estimated_Monthly_USD": 71.98,
+          "one_time_setup_usd": 0.0,
+          "fits_budget": true,
+          "components": [
+            "aws-ec2-t4g-medium",
+            "aws-rds-db-t4g-medium"
+          ],
+          "provenance": "verified_current_price",
+          "tradeoffs": "Managed automated backups and point-in-time recovery via RDS within modest startup budgets."
+        },
+        {
+          "option_id": "opt-hetzner-baremetal-ax42-1",
+          "offering_type": "standard",
+          "name": "Hetzner Dedicated Root Server `AX42-1` Standard (8C/16T Ryzen 7 PRO 8700GE, 64 GB DDR5, 2x 512 GB NVMe + Primary IPv4)",
+          "Estimated_Monthly_USD": 115.83,
+          "recurring_monthly_eur_excl_vat": 99.0,
+          "one_time_setup_eur_excl_vat": 49.0,
+          "fits_budget": true,
+          "components": [
+            "hetzner-dedicated-ax42-1-standard"
+          ],
+          "provenance": "verified_current_price",
+          "tradeoffs": "Standard offering is \u20ac97.30/mo + \u20ac1.70/mo primary IPv4 (\u20ac99.00/mo excl. VAT) plus \u20ac49.00 one-time server setup fee (\u20ac0.00 setup fee on Primary IPv4; \u20ac4.90 setup fee applies only to optional Additional Single IPv4 addresses). (Promotional/limited-stock variants such as AX41-1-LTD/AX42-1-LTD are tracked separately and not mixed with standard SLA pricing.)"
+        },
+        {
+          "option_id": "opt-aws-ec2-rds-8gb",
+          "offering_type": "standard",
+          "name": "AWS EC2 (`t4g.large`) + Managed Amazon RDS PostgreSQL (`db.t4g.large`)",
+          "Estimated_Monthly_USD": 143.23,
+          "one_time_setup_usd": 0.0,
+          "fits_budget": false,
+          "components": [
+            "aws-ec2-t4g-large",
+            "aws-rds-db-t4g-large"
+          ],
+          "provenance": "verified_current_price",
+          "tradeoffs": "16 GiB combined RAM across App + Managed RDS tier."
+        },
+        {
+          "option_id": "opt-gcp-gce-cloudsql",
+          "offering_type": "standard",
+          "name": "Google Cloud Compute Engine (`e2-standard-2`) + Cloud SQL for PostgreSQL (2 vCPU, 8 GiB)",
+          "Estimated_Monthly_USD": 180.32,
+          "one_time_setup_usd": 0.0,
+          "fits_budget": false,
+          "components": [
+            "gcp-gce-e2-standard-2",
+            "gcp-cloud-sql-pg-2vcpu-8gb"
+          ],
+          "provenance": "verified_current_price",
+          "tradeoffs": "Managed Cloud SQL Enterprise with 8 GiB dedicated DB memory; higher base cost ($180.32/mo)."
+        },
+        {
+          "option_id": "opt-azure-b2ms-pair",
+          "offering_type": "standard",
+          "name": "Microsoft Azure 2x `Standard_B2ms` VMs (App VM + Dedicated PostgreSQL VM)",
+          "Estimated_Monthly_USD": 121.48,
+          "one_time_setup_usd": 0.0,
+          "fits_budget": false,
+          "components": [
+            "azure-vm-b2ms"
+          ],
+          "provenance": "verified_current_price",
+          "tradeoffs": "Predictable $121.48/mo compute cost in East US; Azure Database for PostgreSQL Flexible Server pricing is marked unverified offline (user override supported)."
+        }
+      ],
+      "unverified_services_notice": "Managed Redis/ElastiCache, Azure Flexible Server, and out-of-stock promotional Hetzner AX42-1-LTD rates are marked unverified/promotional rather than guessed; supply --custom-pricing-file to include custom quotes."
+    },
+    "6_recommended_technology_stack": {
+      "architecture_pattern": "Modular Monolith with Transactional Postgres Job Queue",
+      "selected_architecture_config": {
+        "backend_runtime": "go",
+        "runtime_label": "Go 1.23 (compiled static binary)",
+        "backend_framework": "Go net/http + chi router + sqlc",
+        "frontend_framework": "React 19 + TanStack Start / Vite + Tailwind CSS",
+        "database": "postgresql-16",
+        "cache_strategy": "in_process",
+        "redis_enabled": false,
+        "queue_strategy": "postgres_skip_locked",
+        "authentication": "stateless_jwt_httponly_cookie",
+        "object_storage": "s3_compatible",
+        "reverse_proxy": "caddy-2",
+        "deployment": "docker_compose",
+        "healthcheck_strategy": {
+          "endpoint": "/healthz",
+          "port": 8080,
+          "probe_command": [
+            "/app/server",
+            "--healthcheck"
+          ],
+          "entrypoint": [
+            "/app/server"
+          ]
+        }
+      },
+      "stack_decisions": {
+        "runtime": {
+          "choice": "Go 1.23 (compiled static binary)",
+          "why_selected": "Directly matches team experience (`go_typescript_postgres`) while delivering predictable p95 latency on 2-4 vCPU nodes.",
+          "alternatives_considered": [
+            "Rust 1.82 (compiled release binary)",
+            "Node.js 22 LTS (TypeScript / ES2023)",
+            "Python 3.12 (slim container runtime)"
+          ],
+          "why_rejected": "Alternative runtimes do not align as closely with the stated primary team skillset and operational preferences.",
+          "operational_complexity": "Low (single container runtime with deterministic health check).",
+          "cost_implications": "Fits comfortably within 2-4 GiB RAM tiers.",
+          "scaling_limitations": "Single node saturates when CPU exceeds 70-80% under peak serialization load.",
+          "migration_path": "Add horizontal stateless container replicas behind Caddy/ALB."
+        },
+        "backend_framework": {
+          "choice": "Go net/http + chi router + sqlc",
+          "why_selected": "Provides type-safe request validation and low middleware overhead to keep p95 latency below target.",
+          "alternatives_considered": [
+            "Distributed gRPC Microservices",
+            "GraphQL Federation Mesh"
+          ],
+          "why_rejected": "Microservices and GraphQL Federation introduce distributed tracing, network serialization, and deployment coordination overhead unsuitable for Day-0 scale.",
+          "operational_complexity": "Low (modular monolith deployment unit).",
+          "cost_implications": "Zero additional sidecar or service-mesh memory overhead.",
+          "scaling_limitations": "Shared deployment artifact requires disciplined module boundaries as team grows past 15 engineers.",
+          "migration_path": "Extract only the highest-throughput domain module into an independent worker service if independent scaling becomes necessary."
+        },
+        "frontend_framework": {
+          "choice": "React 19 + TanStack Start / Vite + Tailwind CSS",
+          "why_selected": "Provides type-safe full-stack routing, SSR/streaming where needed, and static asset caching via CDN.",
+          "alternatives_considered": [
+            "Multi-repo Micro-Frontends",
+            "Native Mobile Apps on Day 0"
+          ],
+          "why_rejected": "Micro-frontends multiply CI/CD and bundle complexity with zero benefit for a focused product team.",
+          "operational_complexity": "Low.",
+          "cost_implications": "Static assets are served from CDN / Caddy with near-zero compute cost.",
+          "scaling_limitations": "SSR routes consume server CPU under heavy un-cached bot traffic.",
+          "migration_path": "Place CDN edge caching headers (`Cache-Control: s-maxage`) in front of public SSR pages."
+        },
+        "database": {
+          "choice": "PostgreSQL 16 (Primary OLTP + JSONB + Full-Text Search)",
+          "why_selected": "Handles relational integrity, JSONB document flexibility, and ACID transactions in a single battle-tested engine.",
+          "alternatives_considered": [
+            "MongoDB + Elasticsearch + MySQL polyglot persistence",
+            "CockroachDB / Spanner"
+          ],
+          "why_rejected": "Running 3 separate data stores triples operational maintenance and exceeds the monthly budget; distributed SQL adds network-hop latency unnecessary below 5,000 write RPS.",
+          "operational_complexity": "Low-to-Medium (managed RDS/Cloud SQL or automated pgBackRest container).",
+          "cost_implications": "Consolidates relational, document, and search workloads into a single database tier.",
+          "scaling_limitations": "Single primary node write throughput saturates around 3,000-8,000 write IOPS.",
+          "migration_path": "Add PgBouncer connection pooling, then introduce 1 read replica, then partition time-series tables > 250 GB."
+        },
+        "cache": {
+          "choice": "In-Process LRU Cache + PostgreSQL UNLOGGED tables",
+          "why_selected": "At <= 300 RPS and tight budget without explicit Redis requirement, in-memory process caching + PostgreSQL UNLOGGED tables eliminate an extra container and network hop.",
+          "alternatives_considered": [
+            "Memcached cluster",
+            "Managed AWS ElastiCache Multi-AZ ($100+/mo)"
+          ],
+          "why_rejected": "Managed multi-node cache clusters consume disproportionate budget at Day-0 scale.",
+          "operational_complexity": "Low.",
+          "cost_implications": "$0 additional cloud bill when co-located or using in-process cache.",
+          "scaling_limitations": "In-process cache is not shared across multiple stateless app nodes.",
+          "migration_path": "Switch cache_strategy to 'redis' when scaling to >= 2 stateless app nodes."
+        },
+        "queue": {
+          "choice": "PostgreSQL transactional job queue (`FOR UPDATE SKIP LOCKED`)",
+          "why_selected": "Guarantees atomic job enqueueing inside the same ACID database transaction as business writes without dual-write bugs.",
+          "alternatives_considered": [
+            "Apache Kafka",
+            "RabbitMQ Cluster",
+            "AWS SQS + EventBridge"
+          ],
+          "why_rejected": "Kafka requires ZooKeeper/KRaft brokers and multiple gigabytes of RAM; RabbitMQ adds another stateful cluster to monitor and back up.",
+          "operational_complexity": "Very Low (uses existing PostgreSQL backups and monitoring).",
+          "cost_implications": "$0 extra infrastructure cost.",
+          "scaling_limitations": "Table bloat and lock contention appear above ~2,000 jobs/second.",
+          "migration_path": "Migrate high-volume fire-and-forget telemetry streams to Redis Streams or NATS JetStream if throughput exceeds 2,000 jobs/sec."
+        },
+        "authentication": {
+          "choice": "Stateless EdDSA/ES256 JWT + HttpOnly Secure Session Cookies (or Clerk/Auth.js)",
+          "why_selected": "Prevents XSS token theft via `HttpOnly; Secure; SameSite=Lax` cookies while keeping verification fast.",
+          "alternatives_considered": [
+            "Custom OAuth2 Identity Server microservice",
+            "Enterprise SAML appliance on Day 0"
+          ],
+          "why_rejected": "Maintaining a separate identity microservice doubles deployment surface area.",
+          "operational_complexity": "Low.",
+          "cost_implications": "$0 self-hosted session table in PostgreSQL.",
+          "scaling_limitations": "Database-backed session revocation checks add 1 PK lookup if not cached for 60s.",
+          "migration_path": "Cache active session revocations for 60 seconds in memory or Redis."
+        },
+        "object_storage": {
+          "choice": "S3-Compatible Object Storage (Cloudflare R2 / AWS S3)",
+          "why_selected": "Offloads user uploads and database WAL backups from local block storage with 11 nines durability.",
+          "alternatives_considered": [
+            "Storing binary blobs in PostgreSQL BYTEA",
+            "Local container filesystem volumes"
+          ],
+          "why_rejected": "Storing blobs in PostgreSQL bloats shared_buffers and slows backups; local disks break horizontal scaling.",
+          "operational_complexity": "Low (presigned PUT/GET URLs).",
+          "cost_implications": "~$0.015-$0.023 per GB-month ($0 egress on Cloudflare R2).",
+          "scaling_limitations": "Virtually unlimited object storage scaling.",
+          "migration_path": "Use standard AWS S3 SDK v3 so endpoints can switch via environment variables."
+        },
+        "api_architecture": {
+          "choice": "REST / JSON HTTP/2 API with OpenAPI 3.1 schema validation",
+          "why_selected": "Universal client compatibility, straightforward HTTP caching, and human-readable debugging.",
+          "alternatives_considered": [
+            "gRPC-only external API",
+            "GraphQL with deeply nested dynamic resolvers"
+          ],
+          "why_rejected": "GraphQL requires complex query-depth and N+1 DataLoader defenses on Day 0.",
+          "operational_complexity": "Low.",
+          "cost_implications": "Standard CDN and reverse-proxy compression works out of the box.",
+          "scaling_limitations": "JSON payload verbosity on large batch responses.",
+          "migration_path": "Enable Zstandard/Gzip compression in Caddy and add internal gRPC only for high-frequency internal streams."
+        },
+        "observability": {
+          "choice": "Structured JSON logs + Prometheus `/metrics` endpoint + OpenTelemetry traces",
+          "why_selected": "Vendor-neutral telemetry compatible with Grafana Cloud free tier, VictoriaMetrics, or self-hosted Prometheus.",
+          "alternatives_considered": [
+            "Enterprise APM agents costing $50-$150/host/month",
+            "Unstructured plain-text printf logs"
+          ],
+          "why_rejected": "Commercial per-host APM agents can exceed the entire compute budget on Day 0.",
+          "operational_complexity": "Low.",
+          "cost_implications": "$0 using open-source collectors or free tier metrics.",
+          "scaling_limitations": "High-cardinality labels can bloat time-series memory.",
+          "migration_path": "Sample traces at 10% in production while keeping 100% sampling on errors and slow (>500ms) requests."
+        },
+        "deployment": {
+          "choice": "Docker Compose on Single/Pair Linux Nodes (or AWS EC2 + RDS)",
+          "why_selected": "Matches team size (2) and maintenance capacity without Kubernetes control-plane tax.",
+          "alternatives_considered": [
+            "Managed Kubernetes (EKS/GKE/AKS)",
+            "HashiCorp Nomad + Consul + Vault cluster"
+          ],
+          "why_rejected": "EKS/GKE control planes cost ~$73/month before a single worker node is launched and require continuous cluster upgrade maintenance.",
+          "operational_complexity": "Low (immutable container images deployed via atomic Compose pull/up).",
+          "cost_implications": "Saves $73+/month in control plane fees and 1-2 vCPUs of kube-system daemonset overhead.",
+          "scaling_limitations": "Single-node vertical scaling tops out at 64-128 vCPUs.",
+          "migration_path": "Since services are packaged as standard OCI containers, transition to ECS/Cloud Run or Kubernetes only when node count exceeds 5-8 hosts."
+        },
+        "reverse_proxy": {
+          "choice": "Caddy 2 (Automatic HTTPS, HTTP/2, HTTP/3, Zstd compression)",
+          "why_selected": "Automates Let's Encrypt/ZeroSSL TLS certificate provisioning and renewal with a 15-line Caddyfile.",
+          "alternatives_considered": [
+            "Envoy Proxy mesh",
+            "Manual Nginx + Certbot cron scripts"
+          ],
+          "why_rejected": "Envoy configuration verbosity is overkill for edge routing; manual Certbot cron jobs frequently fail silently after 90 days.",
+          "operational_complexity": "Very Low.",
+          "cost_implications": "$0.",
+          "scaling_limitations": "Single edge proxy handles >15,000 RPS on 2 vCPUs.",
+          "migration_path": "Place Cloudflare or AWS ALB in front of Caddy instances for multi-node active-active routing."
+        },
+        "ci_cd": {
+          "choice": "GitHub Actions (Lint, Unit Tests, Migration Safety Check, Multi-Stage OCI Build)",
+          "why_selected": "Zero self-hosted runner maintenance and native integration with pull-request status checks.",
+          "alternatives_considered": [
+            "Self-hosted Jenkins server",
+            "Complex ArgoCD GitOps cluster"
+          ],
+          "why_rejected": "Self-hosted Jenkins requires patching and dedicated RAM.",
+          "operational_complexity": "Low.",
+          "cost_implications": "Free tier includes 2,000 CI minutes/month.",
+          "scaling_limitations": "Hosted runner build cache eviction above 10 GB.",
+          "migration_path": "Add GitHub Actions layer caching (`type=gha`) or Depot/Namespace fast builders as build volume grows."
+        }
+      }
+    },
+    "7_architecture_diagram_mermaid": "```mermaid\nflowchart TD\n    Client[\"Users & API Clients (HTTPS / HTTP3)\"] --> Edge[\"Caddy 2 Reverse Proxy (TLS, Zstd, Rate Limit)\"]\n    Edge --> App[\"Modular Monolith API & Worker (Container, Non-Root UID 10001)\"]\n    App --> Pool[\"PgBouncer / Connection Pool\"]\n    Pool --> PG[(\"PostgreSQL 16 Primary\\n(OLTP + JSONB + SKIP LOCKED Queue)\")]\n    App --> Cache[(\"Redis 7 / In-Memory Cache\\n(Session & Rate-Limit State)\")]\n    PG --> Backup[\"Off-Site S3 / R2 Object Storage\\n(WAL-G / pgBackRest Continuous Archive)\"]\n    App --> Obs[\"Prometheus /metrics & JSON Structured Logs\"]\n```",
+    "8_adr_documents": [
+      {
+        "id": "ADR-001",
+        "title": "Adopt Modular Monolith on Docker Compose over Kubernetes Microservices",
+        "status": "Accepted",
+        "context": "Team size is 2 with budget $120.0/mo and peak RPS 450.0.",
+        "decision": "Deploy a single stateless modular monolith container behind Caddy 2 using Docker Compose.",
+        "consequences": "Eliminates $73+/mo Kubernetes control plane cost and network mesh latency; requires strict internal package boundaries."
+      },
+      {
+        "id": "ADR-002",
+        "title": "Use PostgreSQL 16 for Primary OLTP and Transactional Job Queue (`FOR UPDATE SKIP LOCKED`)",
+        "status": "Accepted",
+        "context": "Workload requires durable background job processing without dual-write inconsistencies between DB and an external broker.",
+        "decision": "Store relational records, JSONB metadata, and background job queues in PostgreSQL 16.",
+        "consequences": "Single backup/restore surface for RPO/RTO; must monitor queue table vacuuming above 2,000 jobs/sec."
+      },
+      {
+        "id": "ADR-003",
+        "title": "Terminate TLS and Enforce Edge Rate Limiting with Caddy 2",
+        "status": "Accepted",
+        "context": "Service requires automated HTTPS certificate lifecycle and HTTP/2+HTTP/3 support with zero manual renewal toil.",
+        "decision": "Run Caddy 2 as the edge reverse proxy forwarding to the internal app container on port 8080.",
+        "consequences": "Zero-touch TLS management and automatic healthcheck routing."
+      }
+    ],
+    "9_deployment_architecture": {
+      "topology": "Caddy Edge -> Modular Monolith Container -> PostgreSQL 16 + Redis 7",
+      "zero_downtime_rollout": "Blue/green container swap via health-checked Caddy upstream"
+    },
+    "11_scaling_and_failure_considerations": {
+      "single_points_of_failure": "Single-node deployments share host kernel/power; mitigate with RDS Multi-AZ or standby replica when SLA >= 99.95%.",
+      "scaling_triggers": {
+        "add_read_replica_or_cache_at_rps": 1125.0,
+        "split_worker_node_at_cpu_pct": 70.0,
+        "partition_tables_at_dataset_gb": 250
+      }
+    },
+    "12_operational_checklist": [
+      "Verify `SET lock_timeout = '2s'` and `SET statement_timeout = '30s'` on all database migrations.",
+      "Configure automated daily base backups + continuous WAL shipping to S3/R2 and test restore monthly.",
+      "Set container `--memory` and `--pids-limit` flags and run application process as non-root UID `10001`.",
+      "Alert on PostgreSQL disk utilization > 75%, connection utilization > 80%, and p95 latency > target.",
+      "Verify `/healthz` endpoint checks both process liveness and database `SELECT 1` readiness."
+    ]
+  },
+  "warnings": [
+    "Theoretical workload estimates must be validated against real application profiling.",
+    "Capacity numbers are engineering estimates, not guaranteed SLA benchmarks."
+  ],
+  "recommendations": [
+    "Review the generated ADR documents to record trade-offs in version control.",
+    "Account for one-time bare-metal setup fees (\u20ac49.00 server setup + \u20ac0.00 primary IPv4 setup on Hetzner AX42-1; \u20ac4.90 setup applies only to additional single IPs), VAT where applicable, and EBS/PD storage."
+  ],
+  "errors": []
+}

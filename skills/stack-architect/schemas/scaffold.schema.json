@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StackArchitectScaffoldOutput",
+  "type": "object",
+  "required": [
+    "status",
+    "timestamp",
+    "metrics",
+    "errors"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "warning",
+        "error"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 10
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "output_dir",
+        "dry_run",
+        "file_count",
+        "files"
+      ],
+      "properties": {
+        "output_dir": {
+          "type": "string"
+        },
+        "dry_run": {
+          "type": "boolean"
+        },
+        "file_count": {
+          "type": "integer"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
