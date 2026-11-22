@@ -53,7 +53,7 @@ RUNTIME_PROFILES = {
     "nodejs": {
         "runtime_label": "Node.js 22 LTS (TypeScript / ES2023)",
         "backend_framework": "Fastify / Hono + Drizzle ORM",
-        "healthcheck_cmd": ["node", "-e", "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"],
+        "healthcheck_cmd": ["node", "-e", "require('http').get({host:'127.0.0.1',port:8080,path:'/healthz'},r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"],
         "entrypoint": ["node", "src/server.js"],
     },
     "python": {

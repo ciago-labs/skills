@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "stack-architect"
-version = "1.0.2"
+version = "1.0.3"
 description = "Constraint-Driven Technology Stack Compiler, Infrastructure Sizing Engine, and Runnable Day-0 Product Scaffolder"
 readme = "README.md"
 license = {text = "MIT"}

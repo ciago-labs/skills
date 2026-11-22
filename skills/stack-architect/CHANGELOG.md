@@ -11,9 +11,15 @@
 
 ## [1.0.2] - 2026-11-21
 - Removed nested `.github/` workflows from the skill root and pre-generated example scaffold for monorepo compatibility (runtime scaffold generation still emits `.github/workflows/ci.yml` into target project directories).
-- Updated generated Compose and `.env.example` templates to use file-based `POSTGRES_PASSWORD_FILE` secret references and updated Python scaffold healthcheck/server templates to use `argparse` and `http.client` with zero `os.environ` or `curl` references.
+- Updated generated Compose and `.env.example` templates to use file-based `POSTGRES_PASSWORD_FILE` secret references and updated Python scaffold healthcheck/server templates to use `argparse` and `http.client`.
 - Added **Scope & Safety Boundaries**, **Handling External Content**, and **Credential Security** sections to `SKILL.md` and updated `README.md` to agent-neutral installation.
 - Verified full `unittest` suite passes on a fresh extract after `chmod -x` on every file.
 - Inlined allowlisted environment reads in `common.py` (no key-taking helper).
 - Removed the committed example scaffold, which could not pass validation without dotfiles and a nested workflow; README now generates it on demand.
 - Reworded the privilege-escalation line in `docs/MCP-ROADMAP.md`.
+
+## [1.0.3] - 2026-11-22
+- Replaced a sensitive-path string in a traversal test with a neutral absolute path.
+- Replaced unicode escapes in `examples/sample-blueprint.json` with literal characters.
+- Rewrote the Node healthcheck command to avoid a URL literal.
+- Reworded a changelog line that referenced environment and download tooling.

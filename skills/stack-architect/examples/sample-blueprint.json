@@ -524,7 +524,7 @@
           "vat_notes": "Prices exclude 19% VAT (USt)",
           "price_usd": 115.83,
           "monthly_usd_730h": 115.83,
-          "billing_unit": "EUR per month recurring (\u20ac97.30 server + \u20ac1.70 primary IPv4, excl. VAT; plus \u20ac49.00 server setup + \u20ac0.00 primary IPv4 setup one-time)",
+          "billing_unit": "EUR per month recurring (€97.30 server + €1.70 primary IPv4, excl. VAT; plus €49.00 server setup + €0.00 primary IPv4 setup one-time)",
           "source_url": "https://www.hetzner.com/dedicated-rootserver/ax42/configurator/",
           "ipv4_pricing_source_url": "https://docs.hetzner.com/general/infrastructure-and-availability/ipv4-pricing/",
           "verification_timestamp": "2026-11-17T00:00:00Z",
@@ -551,7 +551,7 @@
           "vat_notes": "Prices exclude 19% VAT (USt)",
           "price_usd": 221.13,
           "monthly_usd_730h": 221.13,
-          "billing_unit": "EUR per month recurring (\u20ac187.30 server + \u20ac1.70 primary IPv4, excl. VAT; plus \u20ac49.00 server setup + \u20ac0.00 primary IPv4 setup one-time)",
+          "billing_unit": "EUR per month recurring (€187.30 server + €1.70 primary IPv4, excl. VAT; plus €49.00 server setup + €0.00 primary IPv4 setup one-time)",
           "source_url": "https://www.hetzner.com/dedicated-rootserver/ax42/configurator/",
           "ipv4_pricing_source_url": "https://docs.hetzner.com/general/infrastructure-and-availability/ipv4-pricing/",
           "verification_timestamp": "2026-11-17T00:00:00Z",
@@ -566,17 +566,17 @@
           "service": "Dedicated Root Server Additional Single IPv4 Address (Optional Add-on)",
           "instance_type": "Additional-Single-IPv4",
           "resource_specifications": "1x Additional single IPv4 address for Dedicated Root Servers (distinct from Primary IPv4)",
-          "instance_configuration": "Additional Single IPv4 (\u20ac1.70/mo + \u20ac4.90 one-time setup, excl. VAT)",
+          "instance_configuration": "Additional Single IPv4 (€1.70/mo + €4.90 one-time setup, excl. VAT)",
           "currency": "EUR",
           "price": 1.7,
           "setup_fee": 4.9,
           "ipv4_monthly_fee": 1.7,
           "ipv4_setup_fee": 4.9,
           "vat_included": false,
-          "vat_notes": "Prices exclude 19% VAT (USt); Primary IPv4 has \u20ac0.00 setup fee, whereas Additional Single IPv4 has \u20ac4.90 setup fee",
+          "vat_notes": "Prices exclude 19% VAT (USt); Primary IPv4 has €0.00 setup fee, whereas Additional Single IPv4 has €4.90 setup fee",
           "price_usd": 1.9,
           "monthly_usd_730h": 1.9,
-          "billing_unit": "EUR per month recurring (\u20ac1.70/mo excl. VAT; plus \u20ac4.90 one-time setup fee for additional single IPv4)",
+          "billing_unit": "EUR per month recurring (€1.70/mo excl. VAT; plus €4.90 one-time setup fee for additional single IPv4)",
           "source_url": "https://docs.hetzner.com/general/infrastructure-and-availability/ipv4-pricing/",
           "verification_timestamp": "2026-11-17T00:00:00Z",
           "verification_date": "2026-11-17",
@@ -599,7 +599,7 @@
           "vat_notes": "Excludes VAT; promotional limited availability",
           "price_usd": 69.03,
           "monthly_usd_730h": 69.03,
-          "billing_unit": "EUR per month recurring (\u20ac57.30 base + \u20ac1.70 primary IPv4, excl. VAT; limited stock)",
+          "billing_unit": "EUR per month recurring (€57.30 base + €1.70 primary IPv4, excl. VAT; limited stock)",
           "source_url": "https://www.hetzner.com/dedicated-rootserver/",
           "verification_timestamp": "2026-11-17T00:00:00Z",
           "verification_date": "2026-11-17",
@@ -646,7 +646,7 @@
             "hetzner-dedicated-ax42-1-standard"
           ],
           "provenance": "verified_current_price",
-          "tradeoffs": "Standard offering is \u20ac97.30/mo + \u20ac1.70/mo primary IPv4 (\u20ac99.00/mo excl. VAT) plus \u20ac49.00 one-time server setup fee (\u20ac0.00 setup fee on Primary IPv4; \u20ac4.90 setup fee applies only to optional Additional Single IPv4 addresses). (Promotional/limited-stock variants such as AX41-1-LTD/AX42-1-LTD are tracked separately and not mixed with standard SLA pricing.)"
+          "tradeoffs": "Standard offering is €97.30/mo + €1.70/mo primary IPv4 (€99.00/mo excl. VAT) plus €49.00 one-time server setup fee (€0.00 setup fee on Primary IPv4; €4.90 setup fee applies only to optional Additional Single IPv4 addresses). (Promotional/limited-stock variants such as AX41-1-LTD/AX42-1-LTD are tracked separately and not mixed with standard SLA pricing.)"
         },
         {
           "option_id": "opt-aws-ec2-rds-8gb",
@@ -946,7 +946,7 @@
   ],
   "recommendations": [
     "Review the generated ADR documents to record trade-offs in version control.",
-    "Account for one-time bare-metal setup fees (\u20ac49.00 server setup + \u20ac0.00 primary IPv4 setup on Hetzner AX42-1; \u20ac4.90 setup applies only to additional single IPs), VAT where applicable, and EBS/PD storage."
+    "Account for one-time bare-metal setup fees (€49.00 server setup + €0.00 primary IPv4 setup on Hetzner AX42-1; €4.90 setup applies only to additional single IPs), VAT where applicable, and EBS/PD storage."
   ],
   "errors": []
 }
