@@ -1,0 +1,18 @@
+# Cross-Harness & CLI Compatibility (`local-vram-tuner`)
+
+This repository conforms to the open [Agent Skills Specification](https://agentskills.io/specification) ([Agent Skills Overview](https://agentskills.io/home)).
+
+> **Important Distinction**: `npx skills` ([vercel-labs/skills](https://github.com/vercel-labs/skills)) is a **skill installation and distribution CLI utility**, not an AI-agent runtime harness. It copies or links `SKILL.md` directories into the target workspace or user skill path of an AI coding agent.
+
+## Compatibility Classification Matrix
+
+| Target / Tool | Role | Classification | Documented Skill Path & Installation Procedure | Verification Evidence |
+| :--- | :--- | :--- | :--- | :--- |
+| **Agent Skills Specification (`SKILL.md`)** | Open Format Standard | **Verified** | Root `SKILL.md` + `scripts/` + `references/` + `schemas/` | Automated schema, frontmatter, and path tests in `tests/test_local_vram_tuner.py`. |
+| **Vercel `npx skills` CLI** | Skill Installation / Distribution Utility (Not an Agent Runtime) | **Documented but not independently tested** | `npx skills add <owner>/local-vram-tuner` | Package layout matches [vercel-labs/skills](https://github.com/vercel-labs/skills) conventions. |
+| **Claude Code** | AI Coding Agent Runtime | **Documented but not independently tested** | `mkdir -p ~/.claude/skills && cp -r ./local-vram-tuner ~/.claude/skills/local-vram-tuner` (or project `.claude/skills/local-vram-tuner`) | Follows `.claude/skills/<name>/SKILL.md` discovery ([agentskills.io](https://agentskills.io/home)). |
+| **OpenAI Codex CLI / Cloud** | AI Coding Agent Runtime | **Documented but not independently tested** | `mkdir -p ~/.agents/skills && cp -r ./local-vram-tuner ~/.agents/skills/local-vram-tuner` (or workspace `.agents/skills/local-vram-tuner`) | Follows `~/.agents/skills/<name>/SKILL.md` per [OpenAI Build Skills Docs](https://learn.chatgpt.com/docs/build-skills). |
+| **Gemini CLI** | AI Coding Agent Runtime | **Documented but not independently tested** | `mkdir -p .gemini/skills && cp -r ./local-vram-tuner .gemini/skills/local-vram-tuner` | Matches Gemini CLI `SKILL.md` layout ([google-labs-code/stitch-skills](https://github.com/google-labs-code/stitch-skills)). |
+| **Google Antigravity** | AI Coding Agent Runtime | **Documented but not independently tested** | Default workspace path: `mkdir -p .agents/skills && cp -r ./local-vram-tuner .agents/skills/local-vram-tuner` (Global: `~/.gemini/config/skills/local-vram-tuner`; backward-compatible legacy path: `.agent/skills/local-vram-tuner`) | Per official [Google Antigravity Agent Skills Docs](https://antigravity.google/docs/skills/), `.agents/skills/` is the default workspace directory while `.agent/skills/` is retained for backward compatibility. |
+| **OpenCode** | AI Coding Agent Runtime | **Documented but not independently tested** | `mkdir -p ~/.config/opencode/skills && cp -r ./local-vram-tuner ~/.config/opencode/skills/local-vram-tuner` | Compatible with OpenCode `SKILL.md` loader ([vercel-labs/skills](https://github.com/vercel-labs/skills)). |
+| **Hermes Agent** | AI Agent Runtime | **Documented but not independently tested** | Manual local installation into Hermes's primary skills directory: `mkdir -p ~/.hermes/skills && cp -r ./local-vram-tuner ~/.hermes/skills/local-vram-tuner` (also supports shared `.agents/skills/local-vram-tuner`) | Per [Hermes Agent Official Skills Documentation](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills) and [Working with Skills Guide](https://hermes-agent.nousresearch.com/docs/guides/work-with-skills), local custom skills are installed by copying the skill directory into `~/.hermes/skills/<skill-name>/`. |

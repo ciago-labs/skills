@@ -1,0 +1,56 @@
+# Coding Agent Task Context
+2026-11-17T10:00:00Z INFO Initializing local worker context for inference run...
+2026-11-17T10:00:00Z INFO Loaded build configuration from local workspace
+2026-11-17T10:00:01Z INFO Starting build pipeline for worker service...
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+Traceback (most recent call last):
+  File "/app/src/handler_0.py", line 10, in process_request
+  File "/app/src/handler_1.py", line 11, in process_request
+  File "/app/src/handler_2.py", line 12, in process_request
+  File "/app/src/handler_3.py", line 13, in process_request
+  File "/app/src/handler_4.py", line 14, in process_request
+  File "/app/src/handler_5.py", line 15, in process_request
+  File "/app/src/handler_6.py", line 16, in process_request
+  File "/app/src/handler_7.py", line 17, in process_request
+  File "/app/src/handler_8.py", line 18, in process_request
+  File "/app/src/handler_9.py", line 19, in process_request
+  File "/app/src/handler_10.py", line 20, in process_request
+  File "/app/src/handler_11.py", line 21, in process_request
+  "integrity": "sha512-abcdef1234567890abcdef1234567890_0==",
+  "resolved": "https://registry.npmjs.org/pkg-0/-/pkg-0-1.0.0.tgz",
+  "integrity": "sha512-abcdef1234567890abcdef1234567890_1==",
+  "resolved": "https://registry.npmjs.org/pkg-1/-/pkg-1-1.0.0.tgz",
+  "integrity": "sha512-abcdef1234567890abcdef1234567890_2==",
+  "resolved": "https://registry.npmjs.org/pkg-2/-/pkg-2-1.0.0.tgz",
+  "integrity": "sha512-abcdef1234567890abcdef1234567890_3==",
+  "resolved": "https://registry.npmjs.org/pkg-3/-/pkg-3-1.0.0.tgz",
+  "integrity": "sha512-abcdef1234567890abcdef1234567890_4==",
+  "resolved": "https://registry.npmjs.org/pkg-4/-/pkg-4-1.0.0.tgz",
+  "integrity": "sha512-abcdef1234567890abcdef1234567890_5==",
+  "resolved": "https://registry.npmjs.org/pkg-5/-/pkg-5-1.0.0.tgz",
+  "integrity": "sha512-abcdef1234567890abcdef1234567890_6==",
+  "resolved": "https://registry.npmjs.org/pkg-6/-/pkg-6-1.0.0.tgz",
+  "integrity": "sha512-abcdef1234567890abcdef1234567890_7==",
+  "resolved": "https://registry.npmjs.org/pkg-7/-/pkg-7-1.0.0.tgz",
+  "integrity": "sha512-abcdef1234567890abcdef1234567890_8==",
+  "resolved": "https://registry.npmjs.org/pkg-8/-/pkg-8-1.0.0.tgz",
+  "integrity": "sha512-abcdef1234567890abcdef1234567890_9==",
+  "resolved": "https://registry.npmjs.org/pkg-9/-/pkg-9-1.0.0.tgz",
+
+dist/assets/index-8f92a3b4.min.js
+var_0x1a2b=function(a,b){return(a+b);};var_0x1a2b=function(a,b){return(a+b);};var_0x1a2b=function(a,b){return(a+b);};var_0x1a2b=function(a,b){return(a+b);};var_0x1a2b=function(a,b){return(a+b);};var_0x1a2b=function(a,b){return(a+b);};var_0x1a2b=function(a,b){return(a+b);};var_0x1a2b=function(a,b){return(a+b);};var_0x1a2b=function(a,b){return(a+b);};var_0x1a2b=function(a,b){return(a+b);};var_0x1a2b=function(a,b){return(a+b);};var_0x1a2b=function(a,b){return(a+b);};
+{"irrelevant_telemetry_dump": [{"id": 0, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 1, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 2, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 3, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 4, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 5, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 6, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 7, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 8, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 9, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 10, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 11, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 12, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 13, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}, {"id": 14, "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "ok"}]}

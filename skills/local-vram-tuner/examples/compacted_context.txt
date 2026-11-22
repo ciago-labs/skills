@@ -1,0 +1,14 @@
+# Coding Agent Task Context
+2026-11-17T10:00:00Z INFO Initializing local worker context for inference run...
+2026-11-17T10:00:00Z INFO Loaded build configuration from local workspace
+2026-11-17T10:00:01Z INFO Starting build pipeline for worker service...
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+2026-11-17T10:00:02Z WARN Connection pool retry attempt failed on db-primary.int (timeout=5000ms)
+Traceback (most recent call last):
+  File "/app/src/handler_0.py", line 10, in process_request
+  File "/app/src/handler_1.py", line 11, in process_request
+  File "/app/src/handler_2.py", line 12, in process_request
+  File "/app/src/handler_3.py", line 13, in process_request
+  ... [8 repetitive stack frames elided by local-vram-tuner] ...
+
+{"_compacted_json_object": true, "total_keys": 1, "sample_keys": ["irrelevant_telemetry_dump"]}
