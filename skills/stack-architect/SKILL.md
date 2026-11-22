@@ -4,7 +4,7 @@ description: Compile product requirements and operational constraints into deter
 license: MIT
 compatibility: Linux, macOS, and Windows with Python 3.8+ standard library. Generates portable Docker Compose, Dockerfile, PostgreSQL SQL, Caddyfile, and CI scaffolds; optional read-only Docker Compose syntax validation when docker is installed.
 metadata:
-  version: "1.0.2"
+  version: "1.0.3"
   category: system-architecture
   alias: ship-blueprint
 ---

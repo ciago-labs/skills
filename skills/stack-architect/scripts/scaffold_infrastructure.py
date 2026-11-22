@@ -200,7 +200,7 @@ COPY --from=builder /app /app
 EXPOSE 8080
 USER 10001:10001
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \\
-  CMD ["node", "-e", "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+  CMD ["node", "-e", "require('http').get({host:'127.0.0.1',port:8080,path:'/healthz'},r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
 CMD ["node", "src/server.js"]
 """,
             ".github/workflows/ci.yml": """name: Day-0 Node.js Scaffold CI

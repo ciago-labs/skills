@@ -112,7 +112,7 @@ class TestStackArchitect(unittest.TestCase):
             with self.assertRaises(ValueError):
                 resolve_safe_child_path(base, "../escaped.txt")
             with self.assertRaises(ValueError):
-                resolve_safe_child_path(base, "/etc/passwd")
+                resolve_safe_child_path(base, "/outside-base/escaped.txt")
 
             dry_target = base / "dry-run-app"
             scaf_dry = scaffold_infrastructure.scaffold_project(self.saas, dry_target, force=False, dry_run=True)
