@@ -1,0 +1,22 @@
+{
+  "product_type": "b2b_developer_saas",
+  "product_complexity": "medium",
+  "expected_concurrent_users": 800,
+  "expected_rps": 150,
+  "read_write_ratio": "85:15",
+  "api_traffic_pattern": "diurnal_burst_3x",
+  "data_storage_gb": 40,
+  "monthly_data_growth_gb": 8,
+  "p95_latency_ms": 120,
+  "availability_sla_pct": 99.9,
+  "monthly_budget_usd": 120.0,
+  "deployment_region": "us-east-1",
+  "team_size": 2,
+  "team_experience": "go_typescript_postgres",
+  "maintenance_capacity": "unknown",
+  "compliance_requirements": [
+    "soc2_audit_trail"
+  ],
+  "rpo_minutes": 15,
+  "rto_minutes": "unknown"
+}

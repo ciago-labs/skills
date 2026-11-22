@@ -1,0 +1,18 @@
+# Cross-Harness & CLI Compatibility (`stack-architect`)
+
+This repository conforms to the open [Agent Skills Specification](https://agentskills.io/specification) ([Agent Skills Overview](https://agentskills.io/home)).
+
+> **Important Distinction**: `npx skills` ([vercel-labs/skills](https://github.com/vercel-labs/skills)) is a **skill installation and distribution CLI utility**, not an AI-agent runtime harness. It copies or links `SKILL.md` directories into the target workspace or user skill path of an AI coding agent.
+
+## Compatibility Classification Matrix
+
+| Target / Tool | Role | Classification | Documented Skill Path & Installation Procedure | Verification Evidence |
+| :--- | :--- | :--- | :--- | :--- |
+| **Agent Skills Specification (`SKILL.md`)** | Open Format Standard | **Verified** | Root `SKILL.md` + `scripts/` + `references/` + `schemas/` | Automated schema, frontmatter, and path tests in `tests/test_stack_architect.py`. |
+| **Vercel `npx skills` CLI** | Skill Installation / Distribution Utility (Not an Agent Runtime) | **Documented but not independently tested** | `npx skills add <owner>/stack-architect` | Package layout matches [vercel-labs/skills](https://github.com/vercel-labs/skills) conventions. |
+| **Claude Code** | AI Coding Agent Runtime | **Documented but not independently tested** | `mkdir -p ~/.claude/skills && cp -r ./stack-architect ~/.claude/skills/stack-architect` (or project `.claude/skills/stack-architect`) | Follows `.claude/skills/<name>/SKILL.md` discovery ([agentskills.io](https://agentskills.io/home)). |
+| **OpenAI Codex CLI / Cloud** | AI Coding Agent Runtime | **Documented but not independently tested** | `mkdir -p ~/.agents/skills && cp -r ./stack-architect ~/.agents/skills/stack-architect` (or workspace `.agents/skills/stack-architect`) | Follows `~/.agents/skills/<name>/SKILL.md` per [OpenAI Build Skills Docs](https://learn.chatgpt.com/docs/build-skills). |
+| **Gemini CLI** | AI Coding Agent Runtime | **Documented but not independently tested** | `mkdir -p .gemini/skills && cp -r ./stack-architect .gemini/skills/stack-architect` | Matches Gemini CLI `SKILL.md` layout ([google-labs-code/stitch-skills](https://github.com/google-labs-code/stitch-skills)). |
+| **Google Antigravity** | AI Coding Agent Runtime | **Documented but not independently tested** | Default workspace path: `mkdir -p .agents/skills && cp -r ./stack-architect .agents/skills/stack-architect` (Global: `~/.gemini/config/skills/stack-architect`; backward-compatible legacy path: `.agent/skills/stack-architect`) | Per official [Google Antigravity Agent Skills Docs](https://antigravity.google/docs/skills/), `.agents/skills/` is the default workspace directory while `.agent/skills/` is retained for backward compatibility. |
+| **OpenCode** | AI Coding Agent Runtime | **Documented but not independently tested** | `mkdir -p ~/.config/opencode/skills && cp -r ./stack-architect ~/.config/opencode/skills/stack-architect` | Compatible with OpenCode `SKILL.md` loader ([vercel-labs/skills](https://github.com/vercel-labs/skills)). |
+| **Hermes Agent** | AI Agent Runtime | **Documented but not independently tested** | Manual local installation into Hermes's primary skills directory: `mkdir -p ~/.hermes/skills && cp -r ./stack-architect ~/.hermes/skills/stack-architect` (also supports shared `.agents/skills/stack-architect`) | Per [Hermes Agent Official Skills Documentation](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills) and [Working with Skills Guide](https://hermes-agent.nousresearch.com/docs/guides/work-with-skills), local custom skills are installed by copying the skill directory into `~/.hermes/skills/<skill-name>/`. |

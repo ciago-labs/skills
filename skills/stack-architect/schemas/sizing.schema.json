@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StackArchitectSizingOutput",
+  "type": "object",
+  "required": [
+    "status",
+    "timestamp",
+    "metrics",
+    "warnings",
+    "errors"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "warning",
+        "error"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 10
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "capacity_disclaimer",
+        "application_tier",
+        "database_tier",
+        "scaling_thresholds"
+      ],
+      "properties": {
+        "capacity_disclaimer": {
+          "type": "string"
+        },
+        "application_tier": {
+          "type": "object",
+          "required": [
+            "recommended_vcpus",
+            "recommended_ram_gib",
+            "ha_instances",
+            "headroom_pct"
+          ]
+        },
+        "database_tier": {
+          "type": "object",
+          "required": [
+            "recommended_vcpus",
+            "recommended_ram_gib",
+            "year1_provisioned_nvme_gb"
+          ]
+        },
+        "scaling_thresholds": {
+          "type": "object"
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

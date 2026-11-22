@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StackArchitectPricingOutput",
+  "type": "object",
+  "required": [
+    "status",
+    "timestamp",
+    "metrics",
+    "errors"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "warning",
+        "error"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 10
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "monthly_budget_usd",
+        "verified_pricing_records",
+        "deployment_options"
+      ],
+      "properties": {
+        "monthly_budget_usd": {
+          "type": "number"
+        },
+        "verified_pricing_records": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "provider",
+              "region",
+              "service",
+              "instance_type",
+              "resource_specifications",
+              "currency",
+              "billing_unit",
+              "price",
+              "source_url",
+              "verification_timestamp",
+              "provenance_type"
+            ],
+            "properties": {
+              "provider": {
+                "type": "string",
+                "minLength": 2
+              },
+              "region": {
+                "type": "string",
+                "minLength": 2
+              },
+              "service": {
+                "type": "string",
+                "minLength": 2
+              },
+              "instance_type": {
+                "type": "string",
+                "minLength": 2
+              },
+              "resource_specifications": {
+                "type": "string",
+                "minLength": 4
+              },
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "USD",
+                  "EUR"
+                ]
+              },
+              "billing_unit": {
+                "type": "string",
+                "minLength": 3
+              },
+              "price": {
+                "type": "number"
+              },
+              "source_url": {
+                "type": "string",
+                "minLength": 10
+              },
+              "verification_timestamp": {
+                "type": "string",
+                "minLength": 10
+              },
+              "provenance_type": {
+                "type": "string",
+                "enum": [
+                  "verified_current_price",
+                  "user_supplied_assumption"
+                ]
+              }
+            }
+          }
+        },
+        "deployment_options": {
+          "type": "array"
+        }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
