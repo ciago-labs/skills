@@ -14,6 +14,8 @@ Each skill is independently organized within this monorepo, with its own instruc
 |---|---|---|
 | [pg-query-surgeon](skills/pg-query-surgeon) | Reviews PostgreSQL migrations for lock hazards, analyzes SQL and EXPLAIN ANALYZE plans, recommends indexes, and designs zero-downtime schema changes. | Available |
 | [docker-forensics](skills/docker-forensics) | Read-only audit of Docker images, layer history, container security posture, bridge/DNS networking, and container crash loops (OOM, SIGSEGV, CrashLoopBackOff) for Go, Rust, Node.js, and Python workloads. | Available |
+| [local-vram-tuner](skills/local-vram-tuner) | Diagnoses local LLM inference bottlenecks on Ollama, llama.cpp, and vLLM: probes NVIDIA, AMD, Apple Silicon, and CPU memory, calculates KV-cache VRAM budgets and safe context windows across FP16, Q8_0, and Q4_0, and compacts bloated agent prompts while redacting secrets. | Available |
+| [stack-architect](skills/stack-architect) | Turns product constraints into a sized and costed infrastructure blueprint: workload math, AWS vs Hetzner vs GCP cost comparison, runtime and stack selection, and a validated Day-0 scaffold (Compose, Dockerfile, Caddy, PostgreSQL schema, ADRs, runbook). | Available |
 | [linux-perf-doctor](https://github.com/AnujTiwari-Student/linux-perf-doctor) | Read-only Linux performance diagnostics using /proc, /sys, PSI, and cgroup telemetry. Maintained in its own repository. | Standalone |
 
 More engineering skills are in development and will be added to this collection.
@@ -59,6 +61,8 @@ cp -r "skills/skills/$SKILL" ~/.hermes/skills/    # Hermes
 - *"Use pg-query-surgeon to review this migration for lock hazards before I deploy."*
 - *"Here is an EXPLAIN ANALYZE output. Why is this query slow, and what index would fix it?"*
 - *"Use docker-forensics to find out why this container keeps exiting with code 137."*
+- *"Use local-vram-tuner to calculate the maximum safe context window for qwen2.5-coder-7b (Q4_K_M) on my 6 GB RTX 4060."*
+- *"Use stack-architect to size infrastructure for my SaaS constraints, compare AWS vs Hetzner vs GCP costs, and scaffold the Day-0 repository."*
 
 ## Design Principles
 
@@ -77,7 +81,9 @@ cp -r "skills/skills/$SKILL" ~/.hermes/skills/    # Hermes
 ├── plugins/                         plugins (coming soon)
 ├── skills/
 │   ├── pg-query-surgeon/            SKILL.md, scripts, tests, references, docs
-│   └── docker-forensics/            SKILL.md, scripts, tests, references, docs
+│   ├── docker-forensics/            SKILL.md, scripts, tests, references, docs
+│   ├── local-vram-tuner/            SKILL.md, scripts, tests, references, docs
+│   └── stack-architect/             SKILL.md, scripts, tests, references, docs
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── LICENSE
