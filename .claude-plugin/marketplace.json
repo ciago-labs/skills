@@ -9,7 +9,9 @@
       "strict": false,
       "skills": [
         "./skills/pg-query-surgeon",
-        "./skills/docker-forensics"
+        "./skills/docker-forensics",
+        "./skills/local-vram-tuner",
+        "./skills/stack-architect"
       ]
     }
   ]
