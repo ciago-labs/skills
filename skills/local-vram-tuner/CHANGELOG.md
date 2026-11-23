@@ -23,3 +23,7 @@
 - Fixed the optimization report mislabeling GQA models as MHA: the report path now passes the preset query-head count to the estimator (qwen2.5-coder-7b reports 28Q:4KV GQA). KV memory numbers were never affected.
 - Corrected the committed sample optimization report.
 - Added a regression test covering every model preset.
+
+## [1.0.4] - 2026-11-23
+- Removed two model presets whose architecture the estimator did not model correctly (a latent-attention model and a GQA model with a misleading name). The four remaining presets are unchanged.
+- Corrected the preset list in `docs/MCP-ROADMAP.md`.

@@ -51,24 +51,6 @@ MODEL_PRESETS: Dict[str, Dict[str, Any]] = {
         "max_position_embeddings": 131072,
         "architecture": "Llama-3.1 (GQA 32Q/8KV)",
     },
-    "deepseek-coder-v2-lite-16b": {
-        "params_b": 15.7,
-        "num_layers": 27,
-        "num_q_heads": 16,
-        "num_kv_heads": 16,
-        "head_dim": 128,
-        "max_position_embeddings": 163840,
-        "architecture": "DeepSeek-V2-Lite (MoE)",
-    },
-    "starcoder2-3b-mqa": {
-        "params_b": 3.0,
-        "num_layers": 30,
-        "num_q_heads": 24,
-        "num_kv_heads": 2,
-        "head_dim": 128,
-        "max_position_embeddings": 16384,
-        "architecture": "StarCoder2 (GQA 24Q/2KV)",
-    },
 }
 
 WEIGHT_BYTES_PER_PARAM: Dict[str, float] = {

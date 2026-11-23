@@ -8,3 +8,6 @@
 - Replaced executable blocklist with a strict executable allowlist (`psql` only) and `shutil.which` path resolution.
 - Replaced full environment iteration with explicit named-variable allowlist reads in `build_child_env()`.
 - Detached child stdin (`DEVNULL`), centralized test CLI execution through `run_bounded_command()`, and updated security documentation.
+
+## [1.0.2] - 2026-11-23
+- Corrected the install commands in README.md (the old paths only worked from inside the skills directory). Runtime behavior unchanged.

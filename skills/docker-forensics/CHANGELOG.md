@@ -19,3 +19,6 @@
 
 ## [1.0.4] - 2026-11-21
 - Renamed `examples/.dockerignore.bad` to `examples/dockerignore.bad` so installers that skip dotfiles keep the fixture; updated references in SKILL.md, README.md, docs/BENCHMARKS.md and tests. Runtime behavior unchanged.
+
+## [1.0.5] - 2026-11-23
+- Corrected the Hermes install path in README.md. Runtime behavior unchanged.

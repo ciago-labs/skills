@@ -24,7 +24,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 Hermes Agent:
 
 ```bash
-hermes skills install ciago-labs/skills/docker-forensics
+hermes skills install ciago-labs/skills/skills/docker-forensics
 ```
 
 Cursor, Codex, Gemini CLI, OpenCode and other agents:

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "local-vram-tuner"
-version = "1.0.3"
+version = "1.0.4"
 description = "Hardware-Aware Local LLM VRAM, KV-Cache, Context Window, and Prompt Optimization Agent Skill"
 readme = "README.md"
 license = {text = "MIT"}

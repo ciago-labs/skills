@@ -4,7 +4,7 @@ description: Diagnose local LLM inference bottlenecks across Ollama, llama.cpp, 
 license: MIT
 compatibility: Linux and macOS with Python 3.8+ standard library. Optional read-only hardware tools nvidia-smi, rocm-smi, sysctl, and system_profiler are auto-detected with graceful /proc/meminfo fallback.
 metadata:
-  version: "1.0.3"
+  version: "1.0.4"
   category: llm-infrastructure
 ---
 
