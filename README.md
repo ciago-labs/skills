@@ -27,8 +27,8 @@ Replace `<skill>` with a skill name from the [catalog](#available-skills), for e
 ### Hermes Agent
 
 ```bash
-hermes skills inspect ciago-labs/skills/<skill>   # preview only; the scan runs at install
-hermes skills install ciago-labs/skills/<skill>
+hermes skills inspect ciago-labs/skills/skills/<skill>   # preview only; the scan runs at install
+hermes skills install ciago-labs/skills/skills/<skill>
 ```
 
 Hermes scans community skills before installing them and blocks CAUTION and DANGEROUS verdicts. Do not override the scanner. Each skill documents its controls in its own `SECURITY.md` (`skills/<skill>/SECURITY.md`).
