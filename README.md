@@ -45,6 +45,7 @@ This route does not run a local security scan. Review the skill's source and `SE
 
 ```
 /plugin marketplace add ciago-labs/skills
+/plugin install ciago-labs-skills@ciago-labs-skills
 ```
 
 ### Manual installation
