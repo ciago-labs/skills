@@ -18,3 +18,8 @@
 - Inlined allowlisted environment reads (no key-taking helper) in `common.py` and `runtime_inspector.py`.
 - Replaced host and port literals in example logs with a neutral hostname and corrected the sample reports.
 - Reworded the privilege-escalation line in `docs/MCP-ROADMAP.md`.
+
+## [1.0.3] - 2026-11-22
+- Fixed the optimization report mislabeling GQA models as MHA: the report path now passes the preset query-head count to the estimator (qwen2.5-coder-7b reports 28Q:4KV GQA). KV memory numbers were never affected.
+- Corrected the committed sample optimization report.
+- Added a regression test covering every model preset.

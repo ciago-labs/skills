@@ -157,6 +157,38 @@ class TestLocalVramTuner(unittest.TestCase):
         mid = f"{label} {pk}" if label else pk
         return f"{dashes}{kind} {mid}{dashes}"
 
+    def test_report_uses_preset_query_heads_and_labels_gqa_correctly(self):
+        def report_for(model):
+            return generate_optimization_report.build_report(
+                model=model,
+                weight_quant="Q4_K_M",
+                kv_quant="FP16",
+                context_length=8192,
+                batch_seqs=1,
+                vram_budget_gb=6.0,
+                context_file=None,
+                nvidia_fixture=FIXTURES_DIR / "nvidia_smi_rtx4060_6gb.csv",
+            )
+
+        rep = report_for("qwen2.5-coder-7b")
+        arch = rep["metrics"]["kv_cache"]["architecture"]
+        self.assertEqual(arch["num_q_heads"], 28)
+        self.assertEqual(arch["num_kv_heads"], 4)
+        self.assertTrue(arch["attention_mechanism"].startswith("GQA"), arch["attention_mechanism"])
+        self.assertNotIn("MHA", arch["attention_mechanism"])
+
+        for name, preset in kv_cache_estimator.MODEL_PRESETS.items():
+            with self.subTest(model=name):
+                arch = report_for(name)["metrics"]["kv_cache"]["architecture"]
+                self.assertEqual(arch["num_q_heads"], preset["num_q_heads"])
+                self.assertEqual(arch["num_kv_heads"], preset["num_kv_heads"])
+                if preset["num_kv_heads"] == 1:
+                    self.assertTrue(arch["attention_mechanism"].startswith("MQA"))
+                elif preset["num_kv_heads"] < preset["num_q_heads"]:
+                    self.assertTrue(arch["attention_mechanism"].startswith("GQA"))
+                else:
+                    self.assertTrue(arch["attention_mechanism"].startswith("MHA"))
+
     def test_complete_and_malformed_pem_private_key_redaction_regression(self):
         pem_text = "\n".join([
             "# Sample Context With Multiple PEM Formats",

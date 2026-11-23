@@ -47,6 +47,7 @@ def build_report(
         params_b=preset["params_b"],
         num_layers=preset["num_layers"],
         num_kv_heads=preset["num_kv_heads"],
+        num_q_heads=preset["num_q_heads"],
         head_dim=preset["head_dim"],
         weight_quant=weight_quant,
         kv_quant=kv_quant,
