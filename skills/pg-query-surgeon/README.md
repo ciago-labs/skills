@@ -23,14 +23,15 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the modular five-analyzer
 
 ## 6. Installation
 ```bash
-# Install via npx skills CLI
-npx skills add ./pg-query-surgeon
+# Hermes Agent
+hermes skills install ciago-labs/skills/skills/pg-query-surgeon
 
-# Install for Claude Code
-cp -r ./pg-query-surgeon ~/.claude/skills/pg-query-surgeon
+# Cursor, Codex, Gemini CLI, OpenCode and other agents (no local security scan: review the source first)
+npx skills add ciago-labs/skills --skill pg-query-surgeon
 
-# Install for OpenAI Codex
-cp -r ./pg-query-surgeon ~/.agents/skills/pg-query-surgeon
+# Manual copy, run from the root of a clone of the repository
+cp -r skills/pg-query-surgeon ~/.claude/skills/pg-query-surgeon   # Claude Code
+cp -r skills/pg-query-surgeon ~/.agents/skills/pg-query-surgeon   # Codex and others
 ```
 
 ## 7. Supported Agent Environments

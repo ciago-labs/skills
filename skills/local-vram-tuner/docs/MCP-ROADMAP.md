@@ -20,7 +20,7 @@ All business logic in `scripts/common.py`, `scripts/hardware_probe.py`, `scripts
 | `compact_prompt_context` | Deterministically compact bloated context and redact PEM private keys and API credentials. | `{"type":"object","required":["text"],"properties":{"text":{"type":"string"},"max_stack_frames":{"type":"integer","default":4}}}` | `schemas/*.schema.json` |
 
 ## 4. Proposed MCP Resources
-- **`vram-tuner://presets/models`**: Verified architectural presets for Qwen2.5-Coder, Llama-3.1, DeepSeek-Coder, and StarCoder2
+- **`vram-tuner://presets/models`**: Verified architectural presets for Qwen2.5-Coder and Llama-3.1
 - **`vram-tuner://references/kv-math`**: GGML block quantization (Q8_0, Q4_0) and PagedAttention equations
 
 ## 5. Reusable Workflow Prompts
