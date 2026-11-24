@@ -25,5 +25,5 @@
 
 ## [1.0.6] - 2026-11-24
 - Removed network from the read-only docker subcommand allowlist. The runner checked only the first subcommand, so docker network create, rm and connect would have passed. Added a regression test.
-- Restored plain-text detection patterns in analyze_layers.py and audit_container_security.py. Entry 1.0.3 split these literals so install scanners would not flag them; that concealed them from review and is reverted. The patterns are matched against Dockerfile and layer text and are never executed. Matching behavior is identical.
+- Reverted the literal splitting from 1.0.3: those splits existed only so install scanners would not flag the text, which hid it from reviewers. The Dockerfile secret-name check is plain readable regex again, with the ARG|ENV alternation reordered (same matches). Cleanup-layer detection now parses each shell segment with shlex and checks for the rm command, a recursive flag and a package-cache path, instead of matching a fixed substring. This is broader than before: it also catches rm -r and rm -fr variants. The text is only analysed, never executed.
 - Test fixtures still assemble fake secret strings at runtime so no secret-like literal is committed.

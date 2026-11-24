@@ -151,7 +151,7 @@ def audit_security(inspect_data: Optional[Dict[str, Any]], dockerfile_text: Opti
                 "confidence": "high",
                 "recommendation": "Download release artifacts to a file, verify `sha256sum --check`, and then execute."
             })
-        if re.search(r"^\s*(?:ENV|ARG)\s+[A-Z0-9_]*(?:SECRET|PASSWORD|PASSWD|TOKEN|PRIVATE_KEY|API_KEY|ACCESS_KEY)[A-Z0-9_]*\s*(?:=|\s+\S+)", dockerfile_text, re.IGNORECASE | re.MULTILINE):
+        if re.search(r"^\s*(?:ARG|ENV)\s+[A-Z0-9_]*(?:SECRET|PASSWORD|PASSWD|TOKEN|PRIVATE_KEY|API_KEY|ACCESS_KEY)[A-Z0-9_]*\s*(?:=|\s+\S+)", dockerfile_text, re.IGNORECASE | re.MULTILINE):
             findings.append({
                 "id": "SEC-DF-ENVSECRET",
                 "category": "secret_baked_in_image",

@@ -678,5 +678,15 @@ class TestDockerForensics(unittest.TestCase):
         self.assertEqual(res["terminated_reason"], "blocked_mutating_command")
 
 
+    def test_cache_cleanup_detection_parses_argv(self):
+        import shlex
+        from analyze_layers import _removes_cache_dirs
+        for flag in ("-rf", "-fr", "-r"):
+            cmd = "apt-get update && " + shlex.join(["rm", flag, "/var/lib/apt/lists"])
+            self.assertTrue(_removes_cache_dirs(cmd), flag)
+        self.assertFalse(_removes_cache_dirs(shlex.join(["rm", "-f", "/root/.cache/x"])))
+        self.assertFalse(_removes_cache_dirs(shlex.join(["ls", "/var/lib/apt"])))
+
+
 if __name__ == "__main__":
     unittest.main()

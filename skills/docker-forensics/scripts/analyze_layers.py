@@ -13,6 +13,35 @@ if str(SCRIPT_DIR) not in sys.path:
 from common import make_error_envelope, scrub_object_secrets, scrub_text_secrets
 
 
+_CACHE_DIR_PREFIXES = ("/var/lib/apt", "/root/.cache")
+
+
+def _removes_cache_dirs(cmd: str) -> bool:
+    """True if a shell segment runs rm with a recursive flag on a known package-cache directory.
+
+    The command is split into segments and parsed with shlex (argv), so -rf, -fr, -r and
+    --recursive are all recognised. The text is only analysed, never executed.
+    """
+    import re
+    import shlex
+
+    for segment in re.split(r"&&|\|\||;|\|", cmd):
+        try:
+            parts = shlex.split(segment)
+        except ValueError:
+            parts = [p.strip("\"'") for p in segment.split()]
+        for i, part in enumerate(parts):
+            if part.rsplit("/", 1)[-1] != "rm":
+                continue
+            args = parts[i + 1:]
+            flags = [a for a in args if a.startswith("-")]
+            targets = [a for a in args if not a.startswith("-")]
+            recursive = any(f == "--recursive" or (not f.startswith("--") and "r" in f.lower()) for f in flags)
+            if recursive and any(t.startswith(_CACHE_DIR_PREFIXES) for t in targets):
+                return True
+    return False
+
+
 def analyze_layer_history(layers: List[Dict[str, Any]]) -> Dict[str, Any]:
     total_size_bytes = 0
     wasted_bytes = 0
@@ -29,7 +58,7 @@ def analyze_layer_history(layers: List[Dict[str, Any]]) -> Dict[str, Any]:
             seen_commands[cmd] = seen_commands.get(cmd, 0) + 1
 
         # Separate RUN rm/clean layer that doesn't shrink earlier layers
-        if any(tok in cmd for tok in ("rm -rf /var/lib/apt", "apt-get clean", "npm cache clean", "rm -rf /root/.cache")) and "install" not in cmd:
+        if (any(tok in cmd for tok in ("apt-get clean", "npm cache clean")) or _removes_cache_dirs(cmd)) and "install" not in cmd:
             findings.append({
                 "id": f"LYR-SEP-CLEAN-{idx:03d}",
                 "category": "overlayfs_waste",
