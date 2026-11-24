@@ -4,7 +4,7 @@ description: Audit Docker images, layer history, container security posture, bri
 license: MIT
 compatibility: Linux and macOS with Python 3.8+ standard library. Works with offline JSON/Dockerfile fixtures or optional read-only Docker CLI inspection.
 metadata:
-  version: "1.0.5"
+  version: "1.0.6"
   category: container-engineering
 ---
 
@@ -24,7 +24,7 @@ Container image optimization, security auditing, network diagnostics, and crash 
 
 - **Strictly Read-Only Analysis**: All diagnostic scripts are read-only by default. Output files are written only to an explicit path supplied by the user via `--output`.
 - **Never Mutates Containers or Images**: Never stops, kills, restarts, removes, builds, prunes, or pushes containers, images, volumes, or networks, and never runs commands inside inspected containers (`docker exec` and `docker run` are refused).
-- **Allowlisted External Executable**: The bounded command runner (`scripts/common.py`) permits only the `docker` executable with read-only subcommands (`inspect`, `ps`, `images`, `logs`, `history`, `info`, `version`, `network`, `stats`, `top`, `port`, `diff`). All non-allowlisted executables are refused.
+- **Allowlisted External Executable**: The bounded command runner (`scripts/common.py`) permits only the `docker` executable with read-only subcommands (`inspect`, `ps`, `images`, `logs`, `history`, `info`, `version`, `stats`, `top`, `port`, `diff`). All non-allowlisted executables are refused.
 - **Explicit User Approval**: Ask the user for confirmation before running live Docker CLI commands against a host daemon; default to offline fixture or user-supplied JSON inspection whenever possible.
 - **Honest Size Reporting**: Never fabricate before-and-after benchmark image sizes. Distinguish measured layer byte counts from heuristic optimization guidance.
 

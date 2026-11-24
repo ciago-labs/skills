@@ -30,7 +30,7 @@ def build_child_env(source_env: Optional[Mapping[str, str]] = None) -> Dict[str,
 
 
 ALLOWED_DOCKER_READONLY_SUBCOMMANDS = frozenset({
-    "inspect", "ps", "images", "logs", "history", "info", "version", "network", "stats", "top", "port", "diff"
+    "inspect", "ps", "images", "logs", "history", "info", "version", "stats", "top", "port", "diff"
 })
 FORBIDDEN_MUTATING_SUBCOMMANDS = {
     "stop", "kill", "rm", "rmi", "prune", "build", "push", "restart", "pause", "unpause", "update"

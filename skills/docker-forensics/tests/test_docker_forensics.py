@@ -32,6 +32,7 @@ class TestDockerForensics(unittest.TestCase):
 
     def test_inspect_docker_never_exposes_env_secrets_and_validates_schema(self):
         raw = json.loads((EXAMPLES_DIR / "container_inspect.json").read_text(encoding="utf-8"))
+        # Fake secrets are assembled at runtime so no secret-like literal is committed.
         fake_stripe = "sk_" + "live_" + "99999999999999999999"
         fake_pw = "Top" + "SecretPW"
         raw[0]["Config"]["Env"] = [
@@ -668,6 +669,23 @@ class TestDockerForensics(unittest.TestCase):
         self.assertEqual(res_exec["terminated_reason"], "blocked_mutating_command")
         env = build_child_env(source_env={"PATH": "/usr/bin", "DOCKER_HOST": "unix:///var/run/docker.sock", "AWS_SECRET_ACCESS_KEY": "secret"})
         self.assertEqual(env, {"PATH": "/usr/bin", "DOCKER_HOST": "unix:///var/run/docker.sock"})
+
+    def test_network_subcommand_refused(self):
+        from common import ALLOWED_DOCKER_READONLY_SUBCOMMANDS
+        self.assertNotIn("network", ALLOWED_DOCKER_READONLY_SUBCOMMANDS)
+        res = run_docker_bounded_command(["docker", "network", "create", "x"])
+        self.assertFalse(res["ok"])
+        self.assertEqual(res["terminated_reason"], "blocked_mutating_command")
+
+
+    def test_cache_cleanup_detection_parses_argv(self):
+        import shlex
+        from analyze_layers import _removes_cache_dirs
+        for flag in ("-rf", "-fr", "-r"):
+            cmd = "apt-get update && " + shlex.join(["rm", flag, "/var/lib/apt/lists"])
+            self.assertTrue(_removes_cache_dirs(cmd), flag)
+        self.assertFalse(_removes_cache_dirs(shlex.join(["rm", "-f", "/root/.cache/x"])))
+        self.assertFalse(_removes_cache_dirs(shlex.join(["ls", "/var/lib/apt"])))
 
 
 if __name__ == "__main__":

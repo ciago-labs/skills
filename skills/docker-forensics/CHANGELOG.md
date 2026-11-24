@@ -22,3 +22,8 @@
 
 ## [1.0.5] - 2026-11-23
 - Corrected the Hermes install path in README.md. Runtime behavior unchanged.
+
+## [1.0.6] - 2026-11-24
+- Removed network from the read-only docker subcommand allowlist. The runner checked only the first subcommand, so docker network create, rm and connect would have passed. Added a regression test.
+- Reverted the literal splitting from 1.0.3: those splits existed only so install scanners would not flag the text, which hid it from reviewers. The Dockerfile secret-name check is plain readable regex again, with the ARG|ENV alternation reordered (same matches). Cleanup-layer detection now parses each shell segment with shlex and checks for the rm command, a recursive flag and a package-cache path, instead of matching a fixed substring. This is broader than before: it also catches rm -r and rm -fr variants. The text is only analysed, never executed.
+- Test fixtures still assemble fake secret strings at runtime so no secret-like literal is committed.
