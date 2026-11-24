@@ -53,8 +53,8 @@ This route does not run a local security scan. Review the skill's source and `SE
 ```bash
 git clone https://github.com/ciago-labs/skills.git && cd skills
 SKILL=<skill>
-cp -r "skills/$SKILL" ~/.hermes/skills/    # Hermes
-# or: ~/.claude/skills/ (Claude Code), ~/.agents/skills/ (Codex and others)
+mkdir -p ~/.hermes/skills && cp -r "skills/$SKILL" ~/.hermes/skills/    # Hermes
+# or: ~/.claude/skills/ (Claude Code), ~/.agents/skills/ (Codex and others); run mkdir -p on the target first
 ```
 
 Manual copying runs no security scan. Review the skill's source and `SECURITY.md` first.
