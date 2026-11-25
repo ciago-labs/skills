@@ -211,56 +211,6 @@
       "recommendation": "Run container as a non-root UID (e.g., `--user 10001:10001`)."
     },
     {
-      "id": "SEC-PRIV-001",
-      "category": "privilege",
-      "severity": "critical",
-      "classification": "verified",
-      "title": "Container is running in `--privileged` mode (disables seccomp, AppArmor, and device isolation)",
-      "evidence": {
-        "privileged": true
-      },
-      "likely_causes": [
-        "Container launched with --privileged flag"
-      ],
-      "confidence": "high",
-      "recommendation": "Remove `--privileged` and grant only minimal required Linux capabilities."
-    },
-    {
-      "id": "SEC-CAP-001",
-      "category": "capabilities",
-      "severity": "high",
-      "classification": "verified",
-      "title": "Excessive Linux capabilities granted: CAP_SYS_ADMIN, NET_ADMIN",
-      "evidence": {
-        "cap_add": [
-          "CAP_SYS_ADMIN",
-          "NET_ADMIN"
-        ]
-      },
-      "likely_causes": [
-        "Overly permissive CapAdd configuration"
-      ],
-      "confidence": "high",
-      "recommendation": "Drop all capabilities (`--cap-drop=ALL`) and add back only strictly necessary capabilities."
-    },
-    {
-      "id": "SEC-MOUNT-001",
-      "category": "host_mount",
-      "severity": "critical",
-      "classification": "verified",
-      "title": "Sensitive host path mounted into container: `/var/run/docker.sock` -> `/var/run/docker.sock`",
-      "evidence": {
-        "source": "/var/run/docker.sock",
-        "destination": "/var/run/docker.sock",
-        "rw": true
-      },
-      "likely_causes": [
-        "Mounting Docker socket or sensitive host root directories allows trivial host root escape"
-      ],
-      "confidence": "high",
-      "recommendation": "Remove host `/var/run/docker.sock` or `/etc` mounts, or proxy read-only API calls via a hardened socket proxy."
-    },
-    {
       "id": "SEC-ROFS-001",
       "category": "filesystem",
       "severity": "medium",
@@ -417,7 +367,9 @@
       "evidence": {
         "failing_streak": 5,
         "last_exit_code": 1,
-        "last_output": "HTTP probe failed to connect to localhost port 8080: Connection refused"
+        "last_output": "HTTP probe failed to connect to localhost port 8080: Connection refused",
+        "last_output_source": "untrusted_external_content",
+        "last_output_verbatim": false
       },
       "likely_causes": [
         "Healthcheck probe binary missing inside minimal container image, wrong port/loopback binding, or deadlocked application thread pool"
@@ -465,14 +417,7 @@
         "nano_cpus": 0,
         "pids_limit": 0
       },
-      "mounts": [
-        {
-          "source": "/var/run/docker.sock",
-          "destination": "/var/run/docker.sock",
-          "rw": true,
-          "type": "bind"
-        }
-      ],
+      "mounts": [],
       "exposed_ports": [
         "8080/tcp",
         "9090/tcp"
@@ -510,9 +455,9 @@
       "heuristic_reclaimable_cache_mib": 162.12
     },
     "security": {
-      "total_security_findings": 7,
-      "critical_count": 2,
-      "high_count": 2,
+      "total_security_findings": 4,
+      "critical_count": 0,
+      "high_count": 1,
       "medium_count": 3,
       "secrets_exposed_in_report": 0
     },
@@ -567,9 +512,6 @@
     "Move build tools to a builder stage in a multi-stage Dockerfile and copy only runtime artifacts.",
     "Combine package installation and cache cleanup (`&& rm -rf ...`) into a single `RUN` layer.",
     "Run container as a non-root UID (e.g., `--user 10001:10001`).",
-    "Remove `--privileged` and grant only minimal required Linux capabilities.",
-    "Drop all capabilities (`--cap-drop=ALL`) and add back only strictly necessary capabilities.",
-    "Remove host `/var/run/docker.sock` or `/etc` mounts, or proxy read-only API calls via a hardened socket proxy.",
     "Enable `--read-only` root filesystem and mount `/tmp` via `--tmpfs /tmp:rw,noexec,nosuid`.",
     "Pass `--security-opt=no-new-privileges:true`.",
     "Set explicit `--memory` and `--pids-limit` bounds on every container.",

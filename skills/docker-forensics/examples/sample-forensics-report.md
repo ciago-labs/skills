@@ -4,7 +4,7 @@
 - **Container**: `payment-processor-api` (`payment-processor:v1.2.0`)
 - **Exit Code / OOMKilled**: `ExitCode=137` (`OOMKilled=True`, Restarts=`7`)
 - **Measured Layer History Size**: `1370.43 MiB` (Heuristic Reclaimable Cache: `162.12 MiB`)
-- **Security Findings**: `7` (`2` critical, `2` high; Secrets exposed in report: `0`)
+- **Security Findings**: `4` (`0` critical, `1` high; Secrets exposed in report: `0`)
 
 ## 1. Diagnostic & Security Findings
 
@@ -68,21 +68,6 @@
 - **Evidence**: `{"user": "root (default)"}`
 - **Remediation**: Run container as a non-root UID (e.g., `--user 10001:10001`).
 
-### [CRITICAL] SEC-PRIV-001: Container is running in `--privileged` mode (disables seccomp, AppArmor, and device isolation)
-- **Category**: `privilege` | **Classification**: `verified`
-- **Evidence**: `{"privileged": true}`
-- **Remediation**: Remove `--privileged` and grant only minimal required Linux capabilities.
-
-### [HIGH] SEC-CAP-001: Excessive Linux capabilities granted: CAP_SYS_ADMIN, NET_ADMIN
-- **Category**: `capabilities` | **Classification**: `verified`
-- **Evidence**: `{"cap_add": ["CAP_SYS_ADMIN", "NET_ADMIN"]}`
-- **Remediation**: Drop all capabilities (`--cap-drop=ALL`) and add back only strictly necessary capabilities.
-
-### [CRITICAL] SEC-MOUNT-001: Sensitive host path mounted into container: `/var/run/docker.sock` -> `/var/run/docker.sock`
-- **Category**: `host_mount` | **Classification**: `verified`
-- **Evidence**: `{"source": "/var/run/docker.sock", "destination": "/var/run/docker.sock", "rw": true}`
-- **Remediation**: Remove host `/var/run/docker.sock` or `/etc` mounts, or proxy read-only API calls via a hardened socket proxy.
-
 ### [MEDIUM] SEC-ROFS-001: Container root filesystem is writable (`ReadonlyRootfs: false`)
 - **Category**: `filesystem` | **Classification**: `verified`
 - **Evidence**: `{"readonly_rootfs": false}`
@@ -125,7 +110,7 @@
 
 ### [HIGH] CRASH-HEALTH-001: Container healthcheck is UNHEALTHY (failing streak=5)
 - **Category**: `healthcheck_failure` | **Classification**: `verified`
-- **Evidence**: `{"failing_streak": 5, "last_exit_code": 1, "last_output": "HTTP probe failed to connect to localhost port 8080: Connection refused"}`
+- **Evidence**: `{"failing_streak": 5, "last_exit_code": 1, "last_output": "HTTP probe failed to connect to localhost port 8080: Connection refused", "last_output_source": "untrusted_external_content", "last_output_verbatim": false}`
 - **Remediation**: Verify the healthcheck binary exists inside the container image and that `--start-period` is long enough for initialization.
 
 ### [CRITICAL] CRASH-K8S-CLBO: Kubernetes waiting condition `CrashLoopBackOff` on container `payment-processor` (kubelet backoff state; underlying container last terminated with exitCode=137, reason=OOMKilled)
@@ -145,9 +130,6 @@
 - Move build tools to a builder stage in a multi-stage Dockerfile and copy only runtime artifacts.
 - Combine package installation and cache cleanup (`&& rm -rf ...`) into a single `RUN` layer.
 - Run container as a non-root UID (e.g., `--user 10001:10001`).
-- Remove `--privileged` and grant only minimal required Linux capabilities.
-- Drop all capabilities (`--cap-drop=ALL`) and add back only strictly necessary capabilities.
-- Remove host `/var/run/docker.sock` or `/etc` mounts, or proxy read-only API calls via a hardened socket proxy.
 - Enable `--read-only` root filesystem and mount `/tmp` via `--tmpfs /tmp:rw,noexec,nosuid`.
 - Pass `--security-opt=no-new-privileges:true`.
 - Set explicit `--memory` and `--pids-limit` bounds on every container.
