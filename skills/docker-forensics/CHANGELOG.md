@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.0.8] - 2026-11-25
+- Fix CI failure in 1.0.7: `sanitize_untrusted_text()` collapsed newlines to spaces, so instruction-like text on a second line of health-probe output / `State.Error` was joined into the quoted summary and the new regression test failed on all three Python versions. It now keeps only the first non-empty line — later lines are dropped entirely — before collapsing and truncating to 120 characters.
+
 ## [1.0.7] - 2026-11-25
 - Socket audit: `examples/container_inspect.json` no longer combines `Privileged: true`, `CAP_SYS_ADMIN` / `NET_ADMIN`, and a writable `/var/run/docker.sock` mount. It still demonstrates the crash/network findings (OOM `ExitCode 137`, unhealthy healthcheck, loopback bind, root user, no resource limits). The privileged / docker.sock case moved to `tests/fixtures/container_privileged_docker_sock.json` only, so the auditor test still proves `SEC-PRIV-001`, `SEC-CAP-001` and `SEC-MOUNT-001` are detected. Added `examples/README.md` stating all examples are fixtures, never deployments.
 - Snyk audit (W011): health-probe output and `State.Error` are no longer copied verbatim into findings. New `sanitize_untrusted_text()` in `scripts/common.py` scrubs secrets, drops control characters and newlines, collapses to a single line and truncates to 120 characters; `scripts/diagnose_crashes.py` labels the result `untrusted_external_content` with `verbatim: false`. Added a regression test with instruction-like text hidden in health output.
