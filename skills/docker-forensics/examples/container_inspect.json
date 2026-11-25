@@ -44,11 +44,8 @@
       }
     },
     "HostConfig": {
-      "Privileged": true,
-      "CapAdd": [
-        "CAP_SYS_ADMIN",
-        "NET_ADMIN"
-      ],
+      "Privileged": false,
+      "CapAdd": [],
       "NetworkMode": "bridge",
       "ReadonlyRootfs": false,
       "SecurityOpt": [],
@@ -60,14 +57,7 @@
         "MaximumRetryCount": 0
       }
     },
-    "Mounts": [
-      {
-        "Type": "bind",
-        "Source": "/var/run/docker.sock",
-        "Destination": "/var/run/docker.sock",
-        "RW": true
-      }
-    ],
+    "Mounts": [],
     "NetworkSettings": {
       "Ports": {
         "8080/tcp": [
