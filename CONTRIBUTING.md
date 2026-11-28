@@ -46,3 +46,8 @@ Open a GitHub issue. For security problems, do not open a public issue. See [SEC
 ## License
 
 By contributing, you agree that your contributions are licensed under the MIT License.
+
+
+## Contributor License Agreement
+By contributing to this repository, you agree to the Ciago Technologies Individual Contributor License Agreement (v1.1): https://gist.github.com/AnujTiwari-Student/6c9fa7641b367827feea3f187b8cf7e7
+The CLA Assistant will ask you to sign it on your first pull request.
